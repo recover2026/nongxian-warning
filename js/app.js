@@ -203,7 +203,7 @@ function renderDonut(){
   chart.setOption({
     tooltip:{trigger:"item", formatter:"{b}: {c} 县 ({d}%)"},
     series:[{type:"pie", radius:["45%","72%"], center:["50%","52%"],
-      label:{color:"#e8eefc", formatter:"{b}\n{c}"}, labelLine:{lineStyle:{color:"#27395f"}},
+      label:{color:"#1f2937", formatter:"{b}\n{c}"}, labelLine:{lineStyle:{color:"#dbe2ec"}},
       data, color:["#ff4d4f","#ff7a45","#ffc53d","#52c41a"]}]
   }, true);
 }
@@ -216,12 +216,12 @@ function renderProvBar(){
   chart.setOption({
     grid:{left:6,right:14,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
-    xAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#1c2c4a"}}},
-    yAxis:{type:"category", data:arr.map(a=>a[0]), axisLabel:{color:"#9fb2d4", fontSize:11},
-      axisLine:{lineStyle:{color:"#27395f"}}},
+    xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
+    yAxis:{type:"category", data:arr.map(a=>a[0]), axisLabel:{color:"#6b7280", fontSize:11},
+      axisLine:{lineStyle:{color:"#dbe2ec"}}},
     series:[{type:"bar", data:arr.map(a=>a[1]), barWidth:"55%",
       itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}])},
-      label:{show:true, position:"right", color:"#e8eefc"}}]
+      label:{show:true, position:"right", color:"#1f2937"}}]
   }, true);
 }
 
@@ -357,8 +357,8 @@ async function renderMap(){
       return p.name;
     }},
     geo:{ map:mapName, roam:true, zoom: mapLevel==="china"?1.15:1.05,
-      itemStyle:{areaColor:"#0e1c38", borderColor:"#27395f"},
-      emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
+      itemStyle:{areaColor:"#eef2f7", borderColor:"#dbe2ec"},
+      emphasis:{itemStyle:{areaColor:"#dfe7f0"}, label:{show:false}},
       label:{show:false}, regions },
     series:[{type:"scatter", coordinateSystem:"geo", data:sc,
       symbolSize:v=>{ const k = mapMode==="ins" ? Math.min(v[2]||0,3) : (v[2]||0); return [10,16,22,28][k]||12; }, emphasis:{scale:1.4},
@@ -550,8 +550,8 @@ function renderEval(){
         return p.name;
       }},
       geo:{ map:"china", roam:true, zoom:1.15,
-        itemStyle:{areaColor:"#0e1c38", borderColor:"#27395f"},
-        emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
+        itemStyle:{areaColor:"#eef2f7", borderColor:"#dbe2ec"},
+        emphasis:{itemStyle:{areaColor:"#dfe7f0"}, label:{show:false}},
         label:{show:false}},
       series:[{type:"scatter", coordinateSystem:"geo", data:sc,
         symbolSize:v=>{ const k = Math.min(v[2]||0,3); return [10,16,22,28][k]||12; },
@@ -635,11 +635,11 @@ function renderCouple(){
     c1.setOption({
       grid:{left:90,right:24,top:14,bottom:24,containLabel:true},
       tooltip:{trigger:"axis", axisPointer:{type:"shadow"}, formatter:p=>`${p[0].name}<br/>高/极高风险县种植：<b>${p[0].value}</b> 县次`},
-      xAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#1c2c4a"}}},
-      yAxis:{type:"category", data:cropArr.map(e=>e[0]).reverse(), axisLabel:{color:"#e8eefc", fontSize:12}},
+      xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
+      yAxis:{type:"category", data:cropArr.map(e=>e[0]).reverse(), axisLabel:{color:"#1f2937", fontSize:12}},
       series:[{type:"bar", data:cropArr.map(e=>e[1]).reverse(), barWidth:"55%",
         itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}]), borderRadius:[0,6,6,0]},
-        label:{show:true, position:"right", color:"#e8eefc", formatter:"{c}"}}]
+        label:{show:true, position:"right", color:"#1f2937", formatter:"{c}"}}]
     }, true);
     setTimeout(()=>{ try{c1.resize();}catch(e){} }, 60);
 
@@ -648,9 +648,9 @@ function renderCouple(){
     c2.setOption({
       grid:{left:90,right:24,top:36,bottom:24,containLabel:true},
       tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
-      legend:{data:["极高","高","中","低"], textStyle:{color:"#9fb2d4"}, top:0, right:0},
-      xAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#1c2c4a"}}},
-      yAxis:{type:"category", data:insArr.map(e=>e[0]).reverse(), axisLabel:{color:"#e8eefc", fontSize:12}},
+      legend:{data:["极高","高","中","低"], textStyle:{color:"#6b7280"}, top:0, right:0},
+      xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
+      yAxis:{type:"category", data:insArr.map(e=>e[0]).reverse(), axisLabel:{color:"#1f2937", fontSize:12}},
       series:["极高","高","中","低"].map(lv=>({
         name:lv, type:"bar", stack:"all",
         data:insArr.map(e=>e[1][lv]||0).reverse(),
