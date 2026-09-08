@@ -1,16 +1,8 @@
-/* 县级气象灾害风险预警超级平台 — 前端逻辑（多期次支持） */
+/* 阳光农险 · 气象灾害风险预警超级平台 — 前端逻辑（多期次支持） */
 const PW = "nongxian2026";
 const LEVEL_COLOR = { "极高": "#ff4d4f", "高": "#ff7a45", "中": "#ffc53d", "低": "#52c41a" };
 const LEVEL_IDX = { "极低": 0, "低": 1, "中": 2, "高": 3, "极高": 4 };
 const LEVEL_ORDER = ["极高", "高", "中", "低"];
-const PROV_SHORT = {
-  "北京市":"京","天津市":"津","河北省":"冀","山西省":"晋","内蒙古自治区":"蒙","辽宁省":"辽",
-  "吉林省":"吉","黑龙江省":"黑","上海市":"沪","江苏省":"苏","浙江省":"浙","安徽省":"皖",
-  "福建省":"闽","江西省":"赣","山东省":"鲁","河南省":"豫","湖北省":"鄂","湖南省":"湘",
-  "广东省":"粤","广西壮族自治区":"桂","海南省":"琼","重庆市":"渝","四川省":"川","贵州省":"黔",
-  "云南省":"滇","西藏自治区":"藏","陕西省":"陕","甘肃省":"甘","青海省":"青","宁夏回族自治区":"宁",
-  "新疆维吾尔自治区":"新","台湾省":"台","香港特别行政区":"港","澳门特别行政区":"澳"
-};
 
 let DATA = null;          // reports.json
 let CHINA = null;         // china geojson
@@ -28,13 +20,6 @@ const geoCache = {};      // `${lvl}:${adcode}` -> geojson
 /* 当前期次数据对象 */
 function curData(){
   return DATA.periods.find(p => p.period === curPeriod) || DATA.periods[0];
-}
-
-/* 取上一期（同 periods 排序中前一个），没有则 null */
-function prevData(){
-  const sorted = [...DATA.periods].sort((a,b)=>a.period.localeCompare(b.period));
-  const i = sorted.findIndex(p => p.period === curPeriod);
-  return i > 0 ? sorted[i-1] : null;
 }
 
 /* ---------------- 登录 ---------------- */
@@ -110,8 +95,6 @@ function switchPeriod(period){
   renderDashboard();
   renderList();
   renderInsurance();
-  renderEval();
-  renderCouple();
   mapLevel = "china"; curProv = null; curCity = null;   // 期次切换重置下钻
   if(window.echarts && CHINA){ renderMap(); }
   if(window.echarts){
@@ -203,7 +186,7 @@ function renderDonut(){
   chart.setOption({
     tooltip:{trigger:"item", formatter:"{b}: {c} 县 ({d}%)"},
     series:[{type:"pie", radius:["45%","72%"], center:["50%","52%"],
-      label:{color:"#1f2937", formatter:"{b}\n{c}"}, labelLine:{lineStyle:{color:"#dbe2ec"}},
+      label:{color:"#e8eefc", formatter:"{b}\n{c}"}, labelLine:{lineStyle:{color:"#27395f"}},
       data, color:["#ff4d4f","#ff7a45","#ffc53d","#52c41a"]}]
   }, true);
 }
@@ -216,12 +199,12 @@ function renderProvBar(){
   chart.setOption({
     grid:{left:6,right:14,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
-    xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
-    yAxis:{type:"category", data:arr.map(a=>a[0]), axisLabel:{color:"#6b7280", fontSize:11},
-      axisLine:{lineStyle:{color:"#dbe2ec"}}},
+    xAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#1c2c4a"}}},
+    yAxis:{type:"category", data:arr.map(a=>a[0]), axisLabel:{color:"#9fb2d4", fontSize:11},
+      axisLine:{lineStyle:{color:"#27395f"}}},
     series:[{type:"bar", data:arr.map(a=>a[1]), barWidth:"55%",
       itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}])},
-      label:{show:true, position:"right", color:"#1f2937"}}]
+      label:{show:true, position:"right", color:"#e8eefc"}}]
   }, true);
 }
 
@@ -243,7 +226,7 @@ function renderTopList(){
 function rankOf(lv){ return ({"低":1,"中":2,"高":3,"极高":4}[lv]||0); }
 function ofRank(r){ return ({1:"低",2:"中",3:"高",4:"极高"}[r]||"低"); }
 
-async function fetchGeo(lvl,ad){
+async function fetchGeo(lvl, ad){
   const key = `${lvl}:${ad}`;
   if(geoCache[key]) return geoCache[key];
   const url = lvl==="china" ? "./data/china.json"
@@ -267,7 +250,7 @@ function aggregate(scope){
     const nm = scope.lvl==="china" ? (c.geo&&c.geo.prov.name)
              : scope.lvl==="prov"  ? (c.geo&&c.geo.city.name)
              :                       (c.geo&&c.geo.county.name);
-    if(!nm) continue;
+    if(!nm) continue;                       // 特殊区(无DataV边界)不参加面着色
     const r = rankOf(c.overall);
     if(!byName[nm] || r>byName[nm]) byName[nm]=r;
     const n = (c.insuranceHints||[]).length;
@@ -357,8 +340,8 @@ async function renderMap(){
       return p.name;
     }},
     geo:{ map:mapName, roam:true, zoom: mapLevel==="china"?1.15:1.05,
-      itemStyle:{areaColor:"#eef2f7", borderColor:"#dbe2ec"},
-      emphasis:{itemStyle:{areaColor:"#dfe7f0"}, label:{show:false}},
+      itemStyle:{areaColor:"#0e1c38", borderColor:"#27395f"},
+      emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
       label:{show:false}, regions },
     series:[{type:"scatter", coordinateSystem:"geo", data:sc,
       symbolSize:v=>{ const k = mapMode==="ins" ? Math.min(v[2]||0,3) : (v[2]||0); return [10,16,22,28][k]||12; }, emphasis:{scale:1.4},
@@ -389,7 +372,7 @@ async function renderMap(){
   updateMapUI();
 }
 
-/* ---------------- 县域清单（按省风险由高→低排序） ---------------- */
+/* ---------------- 县域清单 ---------------- */
 function filteredCounties(){
   return curData().counties.filter(c=>{
     if(curFilterProv && c.province!==curFilterProv) return false;
@@ -406,20 +389,6 @@ function renderList(){
   curFilterProv = document.getElementById("provFilter").value;
   curFilterLevel = document.getElementById("levelFilter").value;
   const rows = filteredCounties();
-  // 省风险 = 该省所有县中 overall 最高等级
-  const provMax = {};
-  rows.forEach(c => {
-    const r = LEVEL_IDX[c.overall]||0;
-    if(r > (provMax[c.province]||0)) provMax[c.province] = r;
-  });
-  // 排序：省风险高→低 → 县风险高→低 → 省名升序
-  rows.sort((a,b)=>{
-    const pr = (provMax[b.province]||0) - (provMax[a.province]||0);
-    if(pr !== 0) return pr;
-    const lr = (LEVEL_IDX[b.overall]||0) - (LEVEL_IDX[a.overall]||0);
-    if(lr !== 0) return lr;
-    return a.province.localeCompare(b.province);
-  });
   const body = document.getElementById("countyBody");
   document.getElementById("listEmpty").classList.toggle("hidden", rows.length>0);
   body.innerHTML = rows.map(c=>{
@@ -439,247 +408,79 @@ function renderList(){
   }).join("");
 }
 
-/* ---------------- 指数保险匹配（按匹配度从高到低） ---------------- */
+/* ---------------- 指数保险匹配 ---------------- */
 function renderInsurance(){
   const cnt = {};
   curData().counties.forEach(c=>(c.insuranceHints||[]).forEach(i=>cnt[i]=(cnt[i]||0)+1));
   const chips = Object.entries(cnt).sort((a,b)=>b[1]-a[1])
     .map(([k,v])=>`<span class="ins-chip">${k}：<b>${v}</b> 县</span>`).join("");
   document.getElementById("insSummary").innerHTML =
-    `<div style="margin-bottom:8px;color:var(--txt2);font-size:12.5px">基于各县域四窗口主要气象灾害类型自动映射可匹配的天气指数保险产品（霜冻/降水/暴雨/连阴雨/高温/大风/干旱指数保险等），后续需结合标的、阈值、基差与精算校准后投产。表格按<strong>匹配度</strong>（可匹配指数保险类别数）从高到低排序。</div>` + chips;
+    `<div style="margin-bottom:8px;color:var(--txt2);font-size:12.5px">基于各县域四窗口主要气象灾害类型自动映射可匹配的天气指数保险产品（霜冻/降水/暴雨/连阴雨/高温/大风/干旱指数保险等），后续需结合标的、阈值、基差与精算校准后投产。</div>` + chips;
   const body = document.getElementById("insBody");
-  // 匹配度 = insuranceHints.length（可匹配指数保险类别数）
-  const rows = [...curData().counties].sort((a,b)=>{
-    const m = (b.insuranceHints||[]).length - (a.insuranceHints||[]).length;
-    if(m !== 0) return m;
-    return (LEVEL_IDX[b.overall]||0) - (LEVEL_IDX[a.overall]||0);
-  });
+  const rows = [...curData().counties].sort((a,b)=>(LEVEL_IDX[b.overall]||0)-(LEVEL_IDX[a.overall]||0));
   body.innerHTML = rows.map(c=>{
     const hz = [...new Set(c.windows.map(w=>w.hazard))].join("、");
-    const n = (c.insuranceHints||[]).length;
     return `<tr onclick="openDetail('${c.id}')" style="cursor:pointer">
       <td><div class="nm">${c.county}</div><div class="sub2">${c.province} · ${c.city}</div></td>
       <td><span class="lv-badge lv-${c.overall}">${c.overall}</span></td>
       <td class="sub2">${hz}</td>
-      <td class="sub2"><b style="color:var(--brand2);font-size:14px">${n}</b> 类　${(c.insuranceHints||[]).join("、")||"—"}</td>
+      <td class="sub2">${(c.insuranceHints||[]).join("、")||"-"}</td>
       <td><button class="mini-btn" onclick="event.stopPropagation();openDetail('${c.id}')">详情</button></td>
     </tr>`;
   }).join("");
 }
 
 /* ---------------- 指数保险研判 ---------------- */
-/* 推荐级别：星级越多级别越高（★★★ 优先 / ★★ 重点 / ★ 试点） */
 const INS_META = {
-  "连阴雨指数保险":  {hazard:"连阴雨 / 多雨偏湿",     rec:"★★★ 优先", advice:"高频信号，建议本期首批落地，并配套连阴雨灾害预警做风险减量。"},
-  "大风指数保险":    {hazard:"大风 / 大风-秋旱",       rec:"★★★ 优先", advice:"覆盖广、基差相对可控，建议与主粮、经济林果叠加设计触发档位。"},
-  "降水指数保险":    {hazard:"降水偏多 / 较强降水",    rec:"★★★ 优先", advice:"与连阴雨指数互补，按标的耐渍性分档设计触发阈值。"},
-  "干旱指数保险":    {hazard:"秋旱 / 气象波动",        rec:"★★ 重点",  advice:"9-07 期显著抬升，建议针对耐旱性弱作物（如果树、经济林果）先行试点。"},
-  "低温指数保险":    {hazard:"低温 / 初霜冻前兆",      rec:"★★ 重点",  advice:"与霜冻指数协同，重点覆盖北方及高海拔县区。"},
-  "霜冻指数保险":    {hazard:"初霜冻 / 低温",          rec:"★★ 重点",  advice:"针对果蔬、烤烟等霜敏感作物设计，阈值须结合物候校准。"},
-  "暴雨指数保险":    {hazard:"强降水 / 暴雨",          rec:"★ 试点",   advice:"局部高发，建议按地形与排水条件分县域试点。"},
-  "高温指数保险":    {hazard:"高温热害",               rec:"★ 试点",   advice:"覆盖少但损失重，建议特色作物 niche 试点。"}
+  "连阴雨指数保险":  {hazard:"连阴雨 / 多雨偏湿",        rec:"★ 优先",  advice:"高频信号，建议本期首批落地，并配套向日葵农险连阴雨预警做风险减量。"},
+  "大风指数保险":    {hazard:"大风 / 大风-秋旱",         rec:"★ 优先",  advice:"覆盖广、基差相对可控，建议与主粮、经济林果叠加设计触发档位。"},
+  "降水指数保险":    {hazard:"降水偏多 / 较强降水",       rec:"★ 优先",  advice:"与连阴雨指数互补，按标的耐渍性分档设计触发阈值。"},
+  "干旱指数保险":    {hazard:"秋旱 / 气象波动",          rec:"★★ 重点", advice:"9-07 期显著抬升，建议针对耐旱性弱作物（如果树、经济林果）先行试点。"},
+  "低温指数保险":    {hazard:"低温 / 初霜冻前兆",        rec:"★★ 重点", advice:"与霜冻指数协同，重点覆盖北方及高海拔县区。"},
+  "霜冻指数保险":    {hazard:"初霜冻 / 低温",            rec:"★★ 重点", advice:"针对果蔬、烤烟等霜敏感作物设计，阈值须结合物候校准。"},
+  "暴雨指数保险":    {hazard:"强降水 / 暴雨",            rec:"★★★ 试点", advice:"局部高发，建议按地形与排水条件分县域试点。"},
+  "高温指数保险":    {hazard:"高温热害",                rec:"★★★ 试点", advice:"覆盖少但损失重，建议特色作物 niche 试点。"}
 };
-const REC_CLASS = {"★★★ 优先":"lv-ext","★★ 重点":"lv-high","★ 试点":"lv-mid"};
-
-/* 把 rec 字符串中的 ★ 包成 <span class="star">，让金色更醒目 */
-function fmtRec(rec){
-  if(!rec) return "—";
-  return rec.replace(/★/g,'<span class="star">★</span>');
-}
-
-/* 描述"覆盖县数变化是否显著" */
-function significance(prev,cur){
-  const delta = cur - prev;
-  if(prev === 0 && cur > 0) return {delta, txt:"本期新增强信号"};
-  if(delta >= 10)            return {delta, txt:"气象风险显著增强"};
-  if(delta > 0)              return {delta, txt:"气象风险上行"};
-  if(delta < 0 && cur >= 50) return {delta, txt:"覆盖略回落但仍是高频信号"};
-  if(delta < 0)              return {delta, txt:"覆盖回落"};
-  return {delta, txt:"信号持续高位"};
-}
-
 function renderEval(){
   const counties = curData().counties;
-  const curCnt = {};
-  counties.forEach(c => (c.insuranceHints||[]).forEach(i => curCnt[i]=(curCnt[i]||0)+1));
-
-  const prev = prevData();
-  const prevCnt = {};
-  if(prev){ prev.counties.forEach(c => (c.insuranceHints||[]).forEach(i => prevCnt[i]=(prevCnt[i]||0)+1)); }
-
-  // 极高/高风险覆盖数 + 省份覆盖分布（每 ins type）
-  const hiCnt = {}, provCnt = {};
-  counties.forEach(c => {
-    (c.insuranceHints||[]).forEach(i => {
-      if(c.overall==="极高" || c.overall==="高") hiCnt[i]=(hiCnt[i]||0)+1;
-      provCnt[i] = provCnt[i] || {};
-      provCnt[i][c.province]=(provCnt[i][c.province]||0)+1;
-    });
-  });
-
-  const entries = Object.entries(curCnt).sort((a,b)=>b[1]-a[1]);
+  const cnt = {};
+  counties.forEach(c=>(c.insuranceHints||[]).forEach(i=>cnt[i]=(cnt[i]||0)+1));
+  const entries = Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
   const total = counties.length;
   const top = entries[0] || ["—",0];
 
-  // 顶部统计条（加入跨期语境）
+  // 顶部统计条
   document.getElementById("evalStats").innerHTML =
     `<div class="st">覆盖县域 <b>${total}</b> 个</div>` +
     `<div class="st">可匹配指数产品 <b>${entries.length}</b> 类</div>` +
-    `<div class="st">需求最高 <b>${top[0].replace("指数保险","")}</b> 覆盖 <b>${top[1]}</b> 县</div>` +
-    (prev ? `<div class="st">较上期 <b>${prev.period}</b>（${prev.periodLabel.split(" · ")[0]}）</div>` : "");
+    `<div class="st">需求最高 <b>${top[0].replace("指数保险","")}</b> 覆盖 <b>${top[1]}</b> 县</div>`;
 
-  // 需求分布图 → 改为 中国地图（散点颜色＝可匹配指数保险类别数）
-  if(window.echarts && CHINA){
-    try{ echarts.registerMap("china", CHINA); }catch(e){}
-    const el = document.getElementById("evalMap");
-    const chart = charts.evalMap || (charts.evalMap = echarts.init(el, null, {renderer:"canvas"}));
-    const sc = counties.filter(c=>c.coord).map(c=>{
-      const n = (c.insuranceHints||[]).length;
-      return {name:c.county, id:c.id, value:[c.coord[0], c.coord[1], n],
-        itemStyle:{color: INS_COLOR[Math.min(n,3)]}};
-    });
+  // 需求分布图
+  if(window.echarts){
+    const el = document.getElementById("evalChart");
+    const chart = charts.eval || (charts.eval = echarts.init(el, null, {renderer:"canvas"}));
     chart.setOption({
-      backgroundColor:"transparent",
-      tooltip:{trigger:"item", formatter:p=>{
-        if(p.data && p.data.id){
-          const c = curData().counties.find(x=>x.id===p.data.id);
-          if(!c) return "";
-          const n = (c.insuranceHints||[]).length;
-          return `<b>${c.county}</b><br/>${c.province}·${c.city}<br/>整体风险：<b style="color:${LEVEL_COLOR[c.overall]}">${c.overall}</b><br/>可匹配指数保险：<b style="color:${INS_COLOR[Math.min(n,3)]}">${(c.insuranceHints||[]).join("、")||"—"}</b><br/><span style="color:#9fb3d6">点击查看详情</span>`;
-        }
-        return p.name;
-      }},
-      geo:{ map:"china", roam:true, zoom:1.15,
-        itemStyle:{areaColor:"#eef2f7", borderColor:"#dbe2ec"},
-        emphasis:{itemStyle:{areaColor:"#dfe7f0"}, label:{show:false}},
-        label:{show:false}},
-      series:[{type:"scatter", coordinateSystem:"geo", data:sc,
-        symbolSize:v=>{ const k = Math.min(v[2]||0,3); return [10,16,22,28][k]||12; },
-        emphasis:{scale:1.4},
-        itemStyle:{borderColor:"#fff", borderWidth:.5, opacity:.92}}]
+      tooltip:{trigger:"axis", axisPointer:{type:"shadow"}, formatter:p=>`${p[0].name}<br>覆盖 <b>${p[0].value}</b> 县`},
+      grid:{left:90,right:30,top:20,bottom:24},
+      xAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#27395f"}}},
+      yAxis:{type:"category", data:entries.map(e=>e[0]).reverse(), axisLabel:{color:"#e8eefc", fontSize:12}},
+      series:[{type:"bar", data:entries.map(e=>e[1]).reverse(), barWidth:"56%",
+        itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}]), borderRadius:[0,6,6,0]},
+        label:{show:true, position:"right", color:"#e8eefc", formatter:"{c} 县"}}]
     }, true);
-    chart.off("click");
-    chart.on("click", p => { if(p.data && p.data.id) openDetail(p.data.id); });
     setTimeout(()=>{ try{chart.resize();}catch(e){} }, 60);
   }
 
-  // 推荐优先级矩阵（7 列）
+  // 推荐优先级矩阵
+  const recClass = {"★ 优先":"lv-ext","★★ 重点":"lv-high","★★★ 试点":"lv-mid"};
   document.getElementById("evalMatrixBody").innerHTML = entries.map(([k,v])=>{
     const m = INS_META[k] || {hazard:"—", rec:"—", advice:"结合本县域灾害结构专项设计。"};
-    const pv = prevCnt[k]||0;
-    const sig = significance(pv, v);
-    const hi  = hiCnt[k]||0;
-    const pct = ((v/total)*100).toFixed(1);
-    const provs = Object.entries(provCnt[k]||{}).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
-    const provText = provs.length===0 ? "—" :
-      (provs.length<=5 ? provs.join("、") : (provs.slice(0,5).join("、") + ` 等 ${provs.length} 省`));
-    const deltaStr = sig.delta>0 ? `较上期 <b style="color:#52c41a">+${sig.delta}</b> 县`
-                  : sig.delta<0 ? `较上期 <b style="color:#ff7a45">${sig.delta}</b> 县`
-                  : "与上期持平";
-    const reason =
-      `覆盖 <b>${v}</b> 县（占 <b>${pct}%</b>），其中极高/高风险 <b>${hi}</b> 县；` +
-      `${deltaStr}，<b>${sig.txt}</b>，值得优先配置。`;
     return `<tr>
       <td><div class="nm">${k}</div></td>
-      <td><b style="color:var(--brand2);font-size:14px">${v}</b> 县</td>
-      <td class="sub2">${provText}</td>
+      <td><b style="color:var(--brand2)">${v}</b> 县</td>
       <td class="sub2">${m.hazard}</td>
-      <td><span class="lv-badge ${REC_CLASS[m.rec]||"lv-low"}">${fmtRec(m.rec)}</span></td>
-      <td class="sub2">${reason}</td>
+      <td><span class="lv-badge lv-${recClass[m.rec]||"lv-low"}">${m.rec}</span></td>
       <td class="sub2">${m.advice}</td>
-    </tr>`;
-  }).join("");
-}
-
-/* ---------------- 风险-农业-保险耦合 ---------------- */
-function renderCouple(){
-  const counties = curData().counties;
-  const allCrops = new Set();
-  const allIns   = new Set();
-  counties.forEach(c => {
-    (c.crops||[]).forEach(x=>allCrops.add(x));
-    (c.insuranceHints||[]).forEach(x=>allIns.add(x));
-  });
-  const kpis = [
-    {cls:"ext",  num: counties.filter(c=>c.overall==="极高").length, lbl:"极高风险县"},
-    {cls:"high", num: counties.filter(c=>c.overall==="高").length,   lbl:"高风险县"},
-    {cls:"tot",  num: allCrops.size,                                  lbl:"主栽作物种类"},
-    {cls:"high", num: allIns.size,                                    lbl:"可匹配指数保险类别"},
-    {cls:"mid",  num: counties.filter(c=>c.overall==="极高"||c.overall==="高").length, lbl:"高/极高风险县（合计）"}
-  ];
-  document.getElementById("coupleKpis").innerHTML = kpis.map(k=>`
-    <div class="kpi ${k.cls}"><div class="bar"></div><div class="num">${k.num}</div><div class="lbl">${k.lbl}</div></div>`).join("");
-
-  // 作物风险暴露：高/极高风险县中，每个作物出现次数（top 12）
-  const cropHi = {};
-  counties.forEach(c=>{
-    if(c.overall==="极高" || c.overall==="高"){
-      (c.crops||[]).forEach(x => cropHi[x]=(cropHi[x]||0)+1);
-    }
-  });
-  const cropArr = Object.entries(cropHi).sort((a,b)=>b[1]-a[1]).slice(0,12);
-
-  // 指数保险覆盖县域风险构成：每 ins type 覆盖县按极高/高/中/低分布
-  const insLevel = {};
-  counties.forEach(c=>{
-    (c.insuranceHints||[]).forEach(i=>{
-      insLevel[i] = insLevel[i] || {极高:0,高:0,中:0,低:0};
-      insLevel[i][c.overall]=(insLevel[i][c.overall]||0)+1;
-    });
-  });
-  const insArr = Object.entries(insLevel).sort((a,b)=>(b[1].极高+b[1].高)-(a[1].极高+a[1].高));
-
-  if(window.echarts){
-    // 作物图：横向条形
-    const c1 = charts.coupleCrop || (charts.coupleCrop = echarts.init(document.getElementById("coupleCropChart"), null, {renderer:"canvas"}));
-    c1.setOption({
-      grid:{left:90,right:24,top:14,bottom:24,containLabel:true},
-      tooltip:{trigger:"axis", axisPointer:{type:"shadow"}, formatter:p=>`${p[0].name}<br/>高/极高风险县种植：<b>${p[0].value}</b> 县次`},
-      xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
-      yAxis:{type:"category", data:cropArr.map(e=>e[0]).reverse(), axisLabel:{color:"#1f2937", fontSize:12}},
-      series:[{type:"bar", data:cropArr.map(e=>e[1]).reverse(), barWidth:"55%",
-        itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}]), borderRadius:[0,6,6,0]},
-        label:{show:true, position:"right", color:"#1f2937", formatter:"{c}"}}]
-    }, true);
-    setTimeout(()=>{ try{c1.resize();}catch(e){} }, 60);
-
-    // 保险×风险 stacked bar
-    const c2 = charts.coupleIns || (charts.coupleIns = echarts.init(document.getElementById("coupleInsChart"), null, {renderer:"canvas"}));
-    c2.setOption({
-      grid:{left:90,right:24,top:36,bottom:24,containLabel:true},
-      tooltip:{trigger:"axis", axisPointer:{type:"shadow"}},
-      legend:{data:["极高","高","中","低"], textStyle:{color:"#6b7280"}, top:0, right:0},
-      xAxis:{type:"value", axisLabel:{color:"#6b7280"}, splitLine:{lineStyle:{color:"#e8edf3"}}},
-      yAxis:{type:"category", data:insArr.map(e=>e[0]).reverse(), axisLabel:{color:"#1f2937", fontSize:12}},
-      series:["极高","高","中","低"].map(lv=>({
-        name:lv, type:"bar", stack:"all",
-        data:insArr.map(e=>e[1][lv]||0).reverse(),
-        itemStyle:{color: LEVEL_COLOR[lv]},
-        label:{show:false}
-      }))
-    }, true);
-    setTimeout(()=>{ try{c2.resize();}catch(e){} }, 60);
-  }
-
-  // 耦合清单：极高/高风险县按等级降序
-  const hi = counties
-    .filter(c=>c.overall==="极高" || c.overall==="高")
-    .sort((a,b)=> (LEVEL_IDX[b.overall]||0)-(LEVEL_IDX[a.overall]||0) || a.province.localeCompare(b.province));
-  document.getElementById("coupleEmpty").classList.toggle("hidden", hi.length>0);
-  document.getElementById("coupleBody").innerHTML = hi.map(c=>{
-    const hz = c.windows[0]? c.windows[0].hazard : "—";
-    const hints = c.insuranceHints||[];
-    const gap = hints.length===0 ? {txt:"无匹配保险", cls:"lv-ext"}
-              : hints.length<=1  ? {txt:"匹配偏弱",  cls:"lv-high"}
-              :                    {txt:"已匹配",    cls:"lv-low"};
-    return `<tr onclick="openDetail('${c.id}')" style="cursor:pointer">
-      <td><div class="nm">${c.county}</div><div class="sub2">${c.province} · ${c.city}</div></td>
-      <td><span class="lv-badge lv-${c.overall}">${c.overall}</span></td>
-      <td class="sub2">${(c.crops||[]).join("、")||"—"}</td>
-      <td class="sub2">${hz}</td>
-      <td class="sub2">${hints.join("、")||"—"}</td>
-      <td><span class="lv-badge ${gap.cls}">${gap.txt}</span></td>
-      <td><button class="mini-btn" onclick="event.stopPropagation();openDetail('${c.id}')">详情</button></td>
     </tr>`;
   }).join("");
 }
@@ -733,7 +534,7 @@ async function packOne(id){
 
 async function downloadAll(){
   const cs = curData().counties;
-  if(!confirm(`将依次下载当前期次（${curData().periodLabel}）全部 ${cs.length} 个县域的 Word 报告（${cs.length} 个文件），浏览器可能提示"允许多次下载"，请点击允许。是否继续？`)) return;
+  if(!confirm(`将依次下载当前期次（${curData().periodLabel}）全部 ${cs.length} 个县域的 Word 报告（${cs.length} 个文件），浏览器可能提示“允许多次下载”，请点击允许。是否继续？`)) return;
   let i=0;
   for(const c of cs){
     dl(c.files.docx); i++;
