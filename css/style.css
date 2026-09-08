@@ -18,7 +18,7 @@ a:hover{text-decoration:underline}
   background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 45%,#fee2e2 100%)}
 .login-card{background:#fff;border-radius:20px;padding:42px 44px;width:384px;
   box-shadow:0 24px 70px rgba(185,28,28,.16);text-align:center;animation:rise .5s ease;color:#1f2937}
-@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .logo{width:96px;height:96px;margin-bottom:12px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(185,28,28,.22))}
 .login-card h1{font-size:22px;margin:4px 0 6px;color:#9f1239;font-weight:800;letter-spacing:.5px}
 .divider{height:3px;width:56px;background:linear-gradient(90deg,#f59e0b,#b91c1c);border-radius:3px;margin:14px auto 18px}
