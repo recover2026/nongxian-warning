@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>县级气象灾害风险预警超级平台</title>
+<link rel="icon" href="./static/logo.png" type="image/png">
+<link rel="stylesheet" href="./css/style.css?v=3">
+</head>
+<body>
+
+<!-- ========== 登录门 ========== -->
+<div id="login" class="login-wrap">
+  <form class="login-card" onsubmit="return doLogin(event)">
+    <img class="logo" src="./static/logo.png" alt="平台标识">
+    <h1>县级气象灾害风险预警平台</h1>
+    <div class="divider"></div>
+    <div class="sub">政策性农险县级气象—作物耦合灾害预警<br>多源气象预测 + 行政边界风险图示 + 风险大屏</div>
+    <label>访问口令</label>
+    <div class="field"><input id="pw" type="password" autofocus placeholder="请输入访问口令"></div>
+    <button type="submit">进入平台</button>
+    <div class="err" id="loginErr"></div>
+    <div class="note">含县域承保与灾损敏感信息，须按最小化授权使用，未经授权不得对外展示。</div>
+  </form>
+</div>
+
+<!-- ========== 主应用 ========== -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><img src="./static/logo.png" class="brand-logo" alt="平台标识"> <span>县级气象灾害风险预警超级平台</span></div>
+    <div class="topbar-right">
+      <select id="periodFilter" class="select period-select" title="切换预测期次"></select>
+      <span class="period-pill" id="periodLabel"></span>
+      <button class="ghost-btn" onclick="logout()">退出</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="dashboard" onclick="switchView('dashboard')">风险大屏</button>
+    <button class="tab" data-view="list" onclick="switchView('list')">县域预警清单</button>
+    <button class="tab" data-view="insurance" onclick="switchView('insurance')">指数保险匹配</button>
+    <button class="tab" data-view="eval" onclick="switchView('eval')">指数保险研判</button>
+    <button class="tab" data-view="couple" onclick="switchView('couple')">风险-农业-保险耦合</button>
+  </nav>
+
+  <!-- 风险大屏 -->
+  <section id="view-dashboard" class="view">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="dash-grid">
+      <div class="panel map-panel">
+        <div class="panel-title">县域风险分布图
+          <span class="map-toggle">
+            <button class="tg active" id="tgRisk" onclick="setMapMode('risk')">风险等级</button>
+            <button class="tg" id="tgIns" onclick="setMapMode('ins')">保险匹配</button>
+          </span>
+          <span class="map-toolbar">
+            <button id="mapBack" class="ghost-btn sm" onclick="mapBack()" style="display:none">← 返回上级</button>
+            <span id="mapCrumb" class="crumb">全国</span>
+          </span>
+          <span class="hint" id="mapHint">（点击省份下钻 · 点击散点看县域详情）</span>
+        </div>
+        <div id="chinaMap" class="map-box"></div>
+        <div class="legend" id="mapLegend"></div>
+      </div>
+      <div class="side-col">
+        <div class="panel">
+          <div class="panel-title">风险等级构成</div>
+          <div id="levelDonut" class="chart-box"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">省级预警数量</div>
+          <div id="provBar" class="chart-box"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">四窗口期风险时间轴 <span class="hint">（与县域报告四窗口一致，附时间区间 · 峰值＝该窗口最高风险等级）</span></div>
+      <div class="win-timeline" id="winTimeline"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">高风险县域 TOP 列表 <span class="hint">（极高 / 高 等级优先）</span></div>
+      <div id="topList" class="top-list"></div>
+    </div>
+  </section>
+
+  <!-- 县域清单 -->
+  <section id="view-list" class="view hidden">
+    <div class="toolbar">
+      <input id="searchBox" class="search" placeholder="搜索省 / 市 / 县…" oninput="renderList()">
+      <select id="provFilter" class="select" onchange="renderList()"></select>
+      <select id="levelFilter" class="select" onchange="renderList()">
+        <option value="">全部等级</option>
+        <option value="极高">极高</option>
+        <option value="高">高</option>
+        <option value="中">中</option>
+        <option value="低">低</option>
+      </select>
+      <button class="primary-btn" onclick="downloadAll()">下载全部预警附件</button>
+    </div>
+    <div class="table-wrap">
+      <table class="county-table" id="countyTable">
+        <thead><tr>
+          <th>省 / 市 / 县</th><th>adcode</th><th>整体等级</th>
+          <th>主要灾害（窗口）</th><th>主栽作物</th><th>操作</th>
+        </tr></thead>
+        <tbody id="countyBody"></tbody>
+      </table>
+      <div id="listEmpty" class="empty hidden">无匹配县域</div>
+    </div>
+  </section>
+
+  <!-- 指数保险匹配 -->
+  <section id="view-insurance" class="view hidden">
+    <div class="panel">
+      <div class="panel-title">天气指数保险匹配框架 <span class="hint">（基于县域灾害类型自动映射，待精算校准后投产 · 表格按匹配度从高到低）</span></div>
+      <div id="insSummary" class="ins-summary"></div>
+    </div>
+    <div class="table-wrap">
+      <table class="county-table" id="insTable">
+        <thead><tr>
+          <th>省 / 市 / 县</th><th>整体等级</th><th>主要灾害信号</th><th>可匹配指数保险</th><th>操作</th>
+        </tr></thead>
+        <tbody id="insBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 指数保险研判 -->
+  <section id="view-eval" class="view hidden">
+    <div class="panel eval-hero">
+      <div class="verdict-card">
+        <div class="verdict-q">问：天气指数保险能否发挥保障作用？</div>
+        <div class="verdict-a ok">能——但前提是「指数设计科学、基差风险可控」。参数化触发 + 无查勘 + 快速赔付，可在传统农险定损难的灾害场景形成有效保障补充。</div>
+      </div>
+      <div class="verdict-card">
+        <div class="verdict-q">问：纯天气指数方案是否值得推荐？</div>
+        <div class="verdict-a ok">值得推荐——尤其针对本批县域高频灾害（连阴雨 / 大风 / 降水偏多 / 秋旱）。纯天气指数框架具备「准确气象数据渠道 + 懂作物农时降基差 + 透明快赔」三重优势，建议优先在极高 / 高等级县配套落地，并结合风险预警服务做风险减量联动。</div>
+      </div>
+      <div class="eval-stats" id="evalStats"></div>
+    </div>
+
+    <div class="eval-grid">
+      <div class="panel">
+        <div class="panel-title">一、能否发挥保障作用：机理与边界</div>
+        <div class="eval-block">
+          <div class="eval-h">① 运作机理</div>
+          <p>天气指数保险以<b>客观气象指数</b>（降雨、气温、风速、积温等）触发赔付，达到约定阈值即赔，<b>不依赖逐户查勘定损</b>。这使它能在传统农险「灾损难量化、定损周期长、道德风险高」的场景中发挥独特保障作用。</p>
+        </div>
+        <div class="eval-block">
+          <div class="eval-h">② 三类可量化优势</div>
+          <ul class="eval-ul">
+            <li><b>赔付快</b>：指数达标即触发，最快灾后数日内到账，利于农户抢抓再生产窗口；</li>
+            <li><b>成本低</b>：省去大面积查勘，运营与道德风险成本显著下降；</li>
+            <li><b>透明可预期</b>：触发规则公开，农户与企业权责清晰，纠纷率低。</li>
+          </ul>
+        </div>
+        <div class="eval-block">
+          <div class="eval-h">③ 保障作用的「边界条件」（必须满足）</div>
+          <p>指数保险保障作用的发挥高度依赖<b>基差风险治理</b>。若指数与农户实际损失脱节（即「该赔未赔、不该赔却赔」），保障作用会失效。依据行业研究（如《农业天气指数保险理论与实务》，胡祥，2025），需落实<b>双轴治理 + 机器学习量化基差</b>：① 指数选取与标的损失高相关；② 结合作物农时物候降基差；③ 用历史损失数据回测校准触发阈值。</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">二、纯天气指数方案是否值得推荐：框架优势</div>
+        <div class="eval-block">
+          <div class="eval-h">纯天气指数设计方法论（05 产品库）</div>
+          <p>纯天气指数保险框架定位为<b>「准确气象历史数据渠道 + 懂作物农时农事降基差 + 纯指数透明快赔」</b>三重优势，并打通「设计—精算—治理」闭环（刘布春《设计指引》+ 肖宇谷精算模型 + 胡祥基差治理）。</p>
+        </div>
+        <div class="eval-block">
+          <div class="eval-h">结论</div>
+          <p>在<b>本批 180 县域的高频灾害结构下</b>，纯天气指数方案「数据准、降基差、快赔透明」的能力与需求高度契合，<b>值得作为政策性农险的补充保障层优先推荐</b>；落地前须完成精算费率校准与基差回测。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">三、县域指数保险需求分布地图 <span class="hint">（基于四窗口灾害信号自动映射 · 散点颜色＝可匹配指数保险类别数，点击县域看详情）</span></div>
+      <div id="evalMap" class="eval-map"></div>
+      <div class="legend">
+        <span><i style="background:#46506a"></i>无匹配</span>
+        <span><i style="background:#5b9bd5"></i>1 类</span>
+        <span><i style="background:#2f7fd1"></i>2 类</span>
+        <span><i style="background:#1c5fb0"></i>3 类及以上</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">四、推荐优先级矩阵 <span class="hint">（按本期覆盖县数由高到低 · 星级越高，推荐级别越高）</span></div>
+      <div class="table-wrap">
+        <table class="county-table" id="evalMatrix">
+          <thead><tr><th>推荐指数产品</th><th>覆盖县数</th><th>主要覆盖省份</th><th>对应主要灾害信号</th><th>推荐等级</th><th>推荐原因</th><th>落地建议</th></tr></thead>
+          <tbody id="evalMatrixBody"></tbody>
+        </table>
+      </div>
+      <div class="disclaimer">数据来源：本平台 180 县域四窗口气气—作物耦合风险预测（reports.json）。保险映射为框架性建议，<b>最终产品条款、费率、触发阈值须经精算与监管报备后投产</b>，本页不构成承保承诺。</div>
+    </div>
+  </section>
+
+  <!-- 风险-农业-保险耦合 -->
+  <section id="view-couple" class="view hidden">
+    <div class="panel">
+      <div class="panel-title">风险—农业—保险 耦合总览 <span class="hint">（以县域为最小单元，把气象风险（等级/灾害）—主栽作物（农业承灾）—可匹配指数保险（风险转移）串成一条线，识别高暴露与保障缺口）</span></div>
+      <div id="coupleKpis" class="kpi-row"></div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel">
+        <div class="panel-title">主栽作物 · 风险暴露（高/极高风险县中种植次数）</div>
+        <div id="coupleCropChart" class="chart-box" style="height:320px"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">指数保险 · 覆盖县域风险构成</div>
+        <div id="coupleInsChart" class="chart-box" style="height:320px"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">高风险县域 · 风险—农业—保险耦合清单 <span class="hint">（按整体风险等级降序 · 极高/高风险县逐行展示，点击查看详情）</span></div>
+      <div class="table-wrap">
+        <table class="county-table" id="coupleTable">
+          <thead><tr><th>省 / 市 / 县</th><th>整体等级</th><th>主栽作物</th><th>首窗主要灾害</th><th>可匹配指数保险</th><th>缺口状态</th><th>操作</th></tr></thead>
+          <tbody id="coupleBody"></tbody>
+        </table>
+        <div id="coupleEmpty" class="empty hidden">无高风险县</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 详情抽屉 -->
+  <div id="detail" class="detail hidden">
+    <div class="detail-head">
+      <div>
+        <div class="detail-title" id="dTitle"></div>
+        <div class="detail-sub" id="dSub"></div>
+      </div>
+      <button class="ghost-btn" onclick="closeDetail()">关闭</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-imgs" id="dImgs"></div>
+      <div class="detail-text">
+        <div class="block"><div class="block-h">核心结论</div><div class="block-c" id="dConclusion"></div></div>
+        <div class="block"><div class="block-h">四窗口风险速览</div><div id="dWindows"></div></div>
+        <div class="block"><div class="block-h">厄尔尼诺（ENSO）未来 60 天影响</div><div class="block-c" id="dEnso"></div></div>
+        <div class="block"><div class="block-h">可匹配天气指数保险</div><div class="block-c" id="dIns"></div></div>
+        <div class="block"><div class="block-h">附件下载</div><div class="block-c" id="dFiles"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>
