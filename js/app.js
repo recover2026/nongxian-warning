@@ -63,7 +63,12 @@ async function loadData(){
     curPeriod = DATA.meta.defaultPeriod || DATA.periods[0].period;
     bootUI();
   }catch(err){
-    alert("数据加载失败：" + err.message);
+    const app=document.getElementById("app");
+    app.innerHTML = `<div style="padding:60px 30px;text-align:center;color:var(--txt2)">
+      <div style="font-size:40px;margin-bottom:14px">⚠️</div>
+      <div style="font-size:15px;margin-bottom:8px">数据加载失败：${err.message}</div>
+      <div style="font-size:12.5px;margin-bottom:18px">多为网络抖动（GitHub 静态资源偶发不可达），请稍后重试。</div>
+      <button class="ghost-btn" onclick="location.reload()">↻ 重新加载</button></div>`;
   }
 }
 
@@ -297,8 +302,15 @@ function setMapMode(m){
   updateMapUI(); renderMap();
 }
 
+function mapMsg(show){
+  const l=document.getElementById("mapLoading"), e=document.getElementById("mapError");
+  if(!l||!e) return;
+  l.style.display = show==="loading" ? "flex" : "none";
+  e.style.display = show==="error" ? "flex" : "none";
+}
 async function renderMap(){
-  if(!window.echarts || !CHINA) return;
+  mapMsg("loading");
+  if(!window.echarts || !CHINA){ mapMsg("error"); return; }
   try{ echarts.registerMap("china", CHINA); }catch(e){}
   const el = document.getElementById("chinaMap");
   const chart = charts.map || (charts.map = echarts.init(el, null, {renderer:"canvas"}));
@@ -306,12 +318,16 @@ async function renderMap(){
   if(mapLevel==="china"){
     mapName="china"; scope={lvl:"china"};
   } else if(mapLevel==="prov"){
-    const g = await fetchGeo("prov", curProv.adcode);
-    mapName=`prov-${curProv.adcode}`; echarts.registerMap(mapName, g);
+    try{
+      const g = await fetchGeo("prov", curProv.adcode);
+      mapName=`prov-${curProv.adcode}`; echarts.registerMap(mapName, g);
+    }catch(e){ mapMsg("error"); return; }
     scope={lvl:"prov", provAd:curProv.adcode};
   } else {
-    const g = await fetchGeo("city", curCity.adcode);
-    mapName=`city-${curCity.adcode}`; echarts.registerMap(mapName, g);
+    try{
+      const g = await fetchGeo("city", curCity.adcode);
+      mapName=`city-${curCity.adcode}`; echarts.registerMap(mapName, g);
+    }catch(e){ mapMsg("error"); return; }
     scope={lvl:"city", cityAd:curCity.adcode};
   }
   const {counties, byName, insByName} = aggregate(scope);
@@ -379,6 +395,7 @@ async function renderMap(){
     }
   });
   updateMapUI();
+  mapMsg("hide");
 }
 
 /* ---------------- 县域清单 ---------------- */
@@ -669,6 +686,33 @@ function renderCouple(){
     </tr>`;
   }).join("");
 }
+
+/* ---------------- 高风险县域排行榜（对标参照站排行榜弹窗） ---------------- */
+function openRank(){
+  const cs = [...curData().counties].sort((a,b)=>
+    (LEVEL_IDX[b.overall]||0)-(LEVEL_IDX[a.overall]||0) || b.coord[1]-a.coord[1]);
+  const d = curData();
+  document.getElementById("rankSub").textContent =
+    `${d.periodLabel} · 覆盖 ${d.total} 县 · 极高 ${d.summary["极高"]||0} / 高 ${d.summary["高"]||0}`;
+  const seg = (title, lv, list, color)=> list.length===0 ? "" :
+    `<div class="rsec" style="color:${color}">${title}（${list.length} 县）</div>` +
+    list.map((c,i)=>`<div class="rr" onclick="closeRank();openDetail('${c.id}')">
+      <span class="rk">${i+1}</span>
+      <span class="nm">${c.county}</span>
+      <span class="hz2">${c.province}·${c.city} · ${c.windows[0]?c.windows[0].hazard:"—"}</span>
+      <span class="lv-badge lv-${c.overall}">${c.overall}</span>
+    </div>`).join("");
+  const ext = cs.filter(c=>c.overall==="极高").slice(0,20);
+  const hig = cs.filter(c=>c.overall==="高").slice(0,30);
+  const mid = cs.filter(c=>c.overall==="中").slice(0,20);
+  document.getElementById("rankBody").innerHTML =
+    seg("🔴 极高风险", "极高", ext, "#ff4d4f") +
+    seg("🟠 高风险", "高", hig, "#ff7a45") +
+    seg("🟡 中风险", "中", mid, "#ffc53d") +
+    `<div class="rank-note">点击任一县查看完整风险预测详情；排序规则：等级 → 纬度（北优先）。</div>`;
+  document.getElementById("rankModal").classList.remove("hidden");
+}
+function closeRank(){ document.getElementById("rankModal").classList.add("hidden"); }
 
 /* ---------------- 详情抽屉 ---------------- */
 function openDetail(id){
