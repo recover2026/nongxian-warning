@@ -482,6 +482,12 @@ const INS_META = {
   "高温指数保险":    {hazard:"高温热害",              rec:"★ 试点",   advice:"覆盖少但损失重，建议特色作物 niche 试点。"}
 };
 const REC_CLASS = {"★★★ 优先":"lv-ext","★★ 重点":"lv-high","★ 试点":"lv-mid"};
+/* 推荐等级徽章内联样式（防 CSS 缓存/缺失导致黑字不可见） */
+const REC_STYLE = {
+  "★★★ 优先":"background:#ff4d4f;color:#fff;font-weight:800",
+  "★★ 重点":"background:#ff7a45;color:#111;font-weight:800",
+  "★ 试点":"background:#ffc53d;color:#111;font-weight:800"
+};
 function fmtRec(rec){ if(!rec) return "—"; return rec.replace(/★/g,'<span class="star">★</span>'); }
 function prevData(){
   const sorted = [...DATA.periods].sort((a,b)=>a.period.localeCompare(b.period));
@@ -583,7 +589,7 @@ function renderEval(){
       <td><b style="color:var(--brand2)">${v}</b> 县</td>
       <td class="sub2">${provText}</td>
       <td class="sub2">${m.hazard}</td>
-      <td><span class="lv-badge lv-${REC_CLASS[m.rec]||"lv-low"}">${fmtRec(m.rec)}</span></td>
+      <td><span class="lv-badge" style="${REC_STYLE[m.rec]||REC_STYLE["★ 试点"]};white-space:nowrap">${fmtRec(m.rec)}</span></td>
       <td class="sub2">${reason}</td>
       <td class="sub2">${m.advice}</td>
     </tr>`;
