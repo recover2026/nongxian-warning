@@ -1,3 +1,4 @@
+*,*::before,*::after{box-sizing:border-box}
 
 
 /* ---------- 耦合页 KPI 下钻详情 / 作物画像（v19 增补） ---------- */
