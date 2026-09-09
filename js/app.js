@@ -763,6 +763,14 @@ function renderCouple(){
   }).join("");
 }
 
+/* ---------------- 风险分级说明折叠 ---------------- */
+function toggleLvGuide(){
+  const bd=document.getElementById("lvGuide"), tg=document.getElementById("lvGuideTg");
+  if(!bd) return;
+  const hidden=bd.classList.toggle("hidden");
+  if(tg) tg.textContent = hidden ? "展开 ▾" : "收起 ▴";
+}
+
 /* ---------------- 高风险县域排行榜（对标参照站排行榜弹窗） ---------------- */
 function openRank(){
   const cs = [...curData().counties].sort((a,b)=>

@@ -243,3 +243,16 @@ a:hover{text-decoration:underline}
 /* ---------- 启动加载层（v18 增补） ---------- */
 .boot{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
   color:var(--txt2);font-size:15px;letter-spacing:1px;background:var(--bg)}
+
+/* ---------- 风险分级说明折叠条（v23 增补） ---------- */
+.lv-guide{margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lv-guide-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;font-weight:800;
+  color:var(--brand2);cursor:pointer;user-select:none}
+.lv-guide-hd:hover{background:rgba(255,255,255,.03)}
+.lv-guide-hd .tg{margin-left:auto;font-size:11.5px;color:var(--txt2);font-weight:400}
+.lv-guide-bd{padding:4px 14px 12px;border-top:1px dashed var(--line)}
+.lg-row{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;padding:9px 0;
+  border-bottom:1px dashed var(--line);font-size:12.5px;line-height:1.75;color:var(--txt2)}
+.lg-row .lv-badge{justify-self:start;white-space:nowrap}
+.lg-row b{color:var(--txt)}
+.lg-note{font-size:11px;color:var(--txt3);padding-top:10px;line-height:1.7}
