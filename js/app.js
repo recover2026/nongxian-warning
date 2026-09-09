@@ -349,7 +349,11 @@ async function renderMap(){
       emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
       label:{show:false}, regions },
     series:[{type:"scatter", coordinateSystem:"geo", data:sc,
-      symbolSize:v=>{ const k = mapMode==="ins" ? Math.min(v[2]||0,3) : (v[2]||0); return [10,16,22,28][k]||12; }, emphasis:{scale:1.4},
+      symbolSize:v=>{
+        if(mapMode==="ins"){ const k=Math.min(v[2]||0,3); return [10,16,22,28][k]||12; }
+        // 风险等级：低1/中2/高3/极高4 → 圆点随等级增大（极高最大 28）
+        const k=(v[2]||0); return [8,12,17,22,28][k]||12;
+      }, emphasis:{scale:1.4},
       itemStyle:{borderColor:"#fff", borderWidth:.5, opacity:.92}}]
   }, true);
   // 图例随模式切换
