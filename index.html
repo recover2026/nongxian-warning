@@ -3,20 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>阳光农险 · 县级气象灾害风险预警超级平台</title>
-<link rel="icon" href="./static/logo.png" type="image/png">
-<link rel="stylesheet" href="./css/style.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>农险气象预测-气象指数保险耦合</title>
+<link rel="icon" href="./static/logo.png?v=11" type="image/png">
+<link rel="stylesheet" href="./css/style.css?v=15">
+<style>
+/* 登录区关键样式内联（防缓存），含 @keyframes 闭合修复 */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 45%,#fee2e2 100%)}
+.login-card{background:#fff;border-radius:20px;padding:42px 44px;width:384px;
+  box-shadow:0 24px 70px rgba(185,28,28,.16);text-align:center;animation:rise .5s ease}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.logo{width:96px;height:96px;margin-bottom:12px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(185,28,28,.22))}
+.login-card h1{font-size:20px;margin:4px 0 6px;color:#9f1239;font-weight:800;letter-spacing:.5px;line-height:1.45}
+.divider{height:3px;width:56px;background:linear-gradient(90deg,#f59e0b,#b91c1c);border-radius:3px;margin:14px auto 18px}
+.login-card label{display:block;text-align:left;font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:600}
+.field input{width:100%;padding:12px 14px;border:1.5px solid #fde68a;border-radius:10px;font-size:14px;background:#fffbeb;color:#111827}
+.field input:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.15);background:#fff}
+.login-card button{width:100%;margin-top:20px;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;border:none;
+  padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(185,28,28,.28)}
+.login-card button:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.err{color:#b91c1c;font-size:12.5px;margin-top:14px;min-height:16px;font-weight:600}
+.note{margin-top:20px;font-size:11px;color:#a8a29e;line-height:1.6}
+</style>
 </head>
 <body>
 
 <!-- ========== 登录门 ========== -->
 <div id="login" class="login-wrap">
   <form class="login-card" onsubmit="return doLogin(event)">
-    <img class="logo" src="./static/logo.png" alt="阳光农险向日葵Logo">
-    <h1>阳光农险 · 气象预警超级平台</h1>
+    <img class="logo" src="./static/logo.png?v=11" width="96" height="96" alt="平台标识">
+    <h1>农险气象预测-气象指数保险耦合</h1>
     <div class="divider"></div>
-    <div class="sub">政策性农险县级气象—作物耦合灾害预警<br>多源气象预测 + 行政边界风险图示 + 风险大屏</div>
-    <label>访问口令</label>
     <div class="field"><input id="pw" type="password" autofocus placeholder="请输入访问口令"></div>
     <button type="submit">进入平台</button>
     <div class="err" id="loginErr"></div>
@@ -27,7 +47,7 @@
 <!-- ========== 主应用 ========== -->
 <div id="app" class="app hidden">
   <header class="topbar">
-    <div class="brand"><img src="./static/logo.png" class="brand-logo" alt="阳光农险向日葵Logo"> <span>阳光农险 · 气象灾害风险预警超级平台</span></div>
+    <div class="brand"><img src="./static/logo.png?v=11" class="brand-logo" width="34" height="34" alt="平台标识"> <span>农险气象预警超级平台</span></div>
     <div class="topbar-right">
       <select id="periodFilter" class="select period-select" title="切换预测期次"></select>
       <span class="period-pill" id="periodLabel"></span>
@@ -133,8 +153,8 @@
         <div class="verdict-a ok">能——但前提是「指数设计科学、基差风险可控」。参数化触发 + 无查勘 + 快速赔付，可在传统农险定损难的灾害场景形成有效保障补充。</div>
       </div>
       <div class="verdict-card">
-        <div class="verdict-q">问：阳光纯天气指数方案是否值得推荐？</div>
-        <div class="verdict-a ok">值得推荐——尤其针对本批县域高频灾害（连阴雨 / 大风 / 降水偏多 / 秋旱）。阳光纯天气指数框架具备「准确气象数据渠道 + 懂作物农时降基差 + 透明快赔」三重优势，建议优先在极高 / 高等级县配套落地，并与「向日葵农险」预警做风险减量联动。</div>
+        <div class="verdict-q">问：纯天气指数方案是否值得推荐？</div>
+        <div class="verdict-a ok">值得推荐——尤其针对本批县域高频灾害（连阴雨 / 大风 / 降水偏多 / 秋旱）。纯天气指数框架具备「准确气象数据渠道 + 懂作物农时降基差 + 透明快赔」三重优势，建议优先在极高 / 高等级县配套落地，并结合灾害预警服务做风险减量联动。</div>
       </div>
       <div class="eval-stats" id="evalStats"></div>
     </div>
@@ -161,39 +181,60 @@
       </div>
 
       <div class="panel">
-        <div class="panel-title">二、阳光方案是否值得推荐：框架优势</div>
+        <div class="panel-title">二、纯天气指数方案是否值得推荐：框架优势</div>
         <div class="eval-block">
-          <div class="eval-h">阳光纯天气指数设计方法论（05 产品库）</div>
-          <p>阳光产险纯天气指数保险框架定位为<b>「准确气象历史数据渠道 + 懂作物农时农事降基差 + 纯指数透明快赔」</b>三重优势，并打通「设计—精算—治理」闭环（刘布春《设计指引》+ 肖宇谷精算模型 + 胡祥基差治理）。</p>
-        </div>
-        <div class="eval-block">
-          <div class="eval-h">科技底座支撑（07 宣传库已核验真实）</div>
-          <ul class="eval-ul">
-            <li><b>向日葵农险</b>平台：承载承保、预警、理赔全链路，可前置推送灾害预警做<b>风险减量</b>；</li>
-            <li><b>阳光天眼风险地图</b>：提供气象—灾损空间化监测，为指数理赔的灾情核验与基差治理提供数据底座。</li>
-          </ul>
+          <div class="eval-h">纯天气指数设计方法论</div>
+          <p>纯天气指数保险框架定位为<b>「准确气象历史数据渠道 + 懂作物农时农事降基差 + 纯指数透明快赔」</b>三重优势，并打通「设计—精算—治理」闭环（刘布春《设计指引》+ 肖宇谷精算模型 + 胡祥基差治理）。</p>
         </div>
         <div class="eval-block">
           <div class="eval-h">结论</div>
-          <p>在<b>本批 180 县域的高频灾害结构下</b>，阳光方案「数据准、降基差、快赔透明」的能力与需求高度契合，<b>值得作为政策性农险的补充保障层优先推荐</b>；落地前须完成精算费率校准与基差回测。</p>
+          <p>在<b>本批 180 县域的高频灾害结构下</b>，纯天气指数方案「数据准、降基差、快赔透明」的能力与需求高度契合，<b>值得作为政策性农险的补充保障层优先推荐</b>；落地前须完成精算费率校准与基差回测。</p>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">三、本期货次县域指数保险需求分布 <span class="hint">（基于四窗口灾害信号自动映射，待精算校准）</span></div>
-      <div id="evalChart" class="chart-box"></div>
+      <div class="panel-title">三、县域指数保险需求分布地图 <span class="hint">（基于四窗口灾害信号自动映射 · 散点颜色＝可匹配指数保险类别数，点击县域看详情）</span></div>
+      <div id="evalMap" class="eval-map"></div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">四、推荐优先级矩阵 <span class="hint">（按本期货次覆盖县数由高到低）</span></div>
+      <div class="panel-title">四、推荐优先级矩阵 <span class="hint">（按本期覆盖县数由高到低 · 星级越多推荐级别越高）</span></div>
       <div class="table-wrap">
         <table class="county-table" id="evalMatrix">
-          <thead><tr><th>推荐指数产品</th><th>覆盖县数</th><th>对应主要灾害信号</th><th>推荐等级</th><th>落地建议</th></tr></thead>
+          <thead><tr><th>推荐指数产品</th><th>覆盖县数</th><th>主要覆盖省份</th><th>对应主要灾害信号</th><th>推荐等级</th><th>推荐原因</th><th>落地建议</th></tr></thead>
           <tbody id="evalMatrixBody"></tbody>
         </table>
       </div>
       <div class="disclaimer">数据来源：本平台 180 县域四窗口气象—作物耦合风险预测（reports.json）。保险映射为框架性建议，<b>最终产品条款、费率、触发阈值须经精算与监管报备后投产</b>，本页不构成承保承诺。</div>
+    </div>
+  </section>
+
+  <!-- 风险-农业-保险耦合 -->
+  <section id="view-couple" class="view hidden">
+    <div class="panel">
+      <div class="panel-title">风险—农业—保险耦合总览 <span class="hint">（以县域为最小单元，把气象风险（等级/灾害）—主栽作物（农业承灾）—可匹配指数保险（风险转移）串成一条线，识别高暴露与保障缺口）</span></div>
+      <div id="coupleKpis" class="kpi-row"></div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel">
+        <div class="panel-title">主栽作物 · 风险暴露（高/极高风险县中种植次数）</div>
+        <div id="coupleCropChart" class="chart-box" style="height:320px"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">指数保险 · 覆盖县域风险构成</div>
+        <div id="coupleInsChart" class="chart-box" style="height:320px"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">高风险县域 · 风险—农业—保险耦合清单 <span class="hint">（按整体风险等级降序 · 极高/高风险县逐行展示，点击查看详情）</span></div>
+      <div class="table-wrap">
+        <table class="county-table" id="coupleTable">
+          <thead><tr><th>省 / 市 / 县</th><th>整体等级</th><th>主栽作物</th><th>首窗主要灾害</th><th>可匹配指数保险</th><th>缺口状态</th><th>操作</th></tr></thead>
+          <tbody id="coupleBody"></tbody>
+        </table>
+        <div id="coupleEmpty" class="empty hidden">无高风险县</div>
+      </div>
     </div>
   </section>
 
@@ -219,8 +260,8 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="./lib/echarts.min.js"></script>
+<script src="./lib/jszip.min.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
