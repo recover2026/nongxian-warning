@@ -28,17 +28,17 @@ function curData(){
 }
 
 /* ---------------- 登录 ---------------- */
-function doLogin(e){
-  e.preventDefault();
+let AUTHED = false;
+function doLogin(){
   const v = document.getElementById("pw").value;
   const err = document.getElementById("loginErr");
   if(v === PW){
-    sessionStorage.setItem("nongxian_auth","1");
+    AUTHED = true;
+    try{ sessionStorage.setItem("nongxian_auth","1"); }catch(e){}  // 隐私模式等场景降级，不中断
     enterApp();
   } else {
     err.textContent = "口令错误，请重新输入";
   }
-  return false;
 }
 function logout(){
   sessionStorage.removeItem("nongxian_auth");
@@ -48,7 +48,7 @@ function logout(){
 function enterApp(){
   document.getElementById("login").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
-  if(!DATA){ loadData(); }
+  if(!DATA){ loadData(); }   // boot 加载层由 bootUI() 收尾时隐藏
 }
 
 /* ---------------- 数据加载 ---------------- */
@@ -63,6 +63,7 @@ async function loadData(){
     curPeriod = DATA.meta.defaultPeriod || DATA.periods[0].period;
     bootUI();
   }catch(err){
+    const b=document.getElementById("boot"); if(b) b.classList.add("hidden");
     const app=document.getElementById("app");
     app.innerHTML = `<div style="padding:60px 30px;text-align:center;color:var(--txt2)">
       <div style="font-size:40px;margin-bottom:14px">⚠️</div>
@@ -74,6 +75,7 @@ async function loadData(){
 
 /* ---------------- UI 初始化 ---------------- */
 function bootUI(){
+  const b=document.getElementById("boot"); if(b) b.classList.add("hidden");
   buildPeriodFilter();
   document.getElementById("periodLabel").textContent = "基准 " + curPeriod;
   buildProvFilter();
@@ -361,8 +363,8 @@ async function renderMap(){
       return p.name;
     }},
     geo:{ map:mapName, roam:true, zoom: mapLevel==="china"?1.15:1.05,
-      itemStyle:{areaColor:"#0e1c38", borderColor:"#27395f"},
-      emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
+      itemStyle:{areaColor:"#132b52", borderColor:"#41639c"},
+      emphasis:{itemStyle:{areaColor:"#1b3a6d"}, label:{show:false}},
       label:{show:false}, regions },
     series:[{type:"scatter", coordinateSystem:"geo", data:sc,
       symbolSize:v=>{
@@ -555,8 +557,8 @@ function renderEval(){
         return p.name;
       }},
       geo:{ map:"china", roam:true, zoom:1.15,
-        itemStyle:{areaColor:"#0e1c38", borderColor:"#27395f"},
-        emphasis:{itemStyle:{areaColor:"#16294a"}, label:{show:false}},
+        itemStyle:{areaColor:"#132b52", borderColor:"#41639c"},
+        emphasis:{itemStyle:{areaColor:"#1b3a6d"}, label:{show:false}},
         label:{show:false}},
       series:[{type:"scatter", coordinateSystem:"geo", data:sc,
         symbolSize:v=>{ const k = Math.min(v[2]||0,3); return [10,16,22,28][k]||12; },
@@ -780,5 +782,7 @@ async function downloadAll(){
 
 /* ---------------- 启动 ---------------- */
 (function(){
-  if(sessionStorage.getItem("nongxian_auth")==="1"){ enterApp(); }
+  try{
+    if(sessionStorage.getItem("nongxian_auth")==="1"){ AUTHED=true; enterApp(); }
+  }catch(e){}
 })();
