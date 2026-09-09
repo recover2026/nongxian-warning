@@ -1,0 +1,22 @@
+
+
+/* ---------- 耦合页 KPI 下钻详情 / 作物画像（v19 增补） ---------- */
+.kpi[onclick]{transition:.15s}
+.kpi[onclick]:hover{border-color:var(--brand2);transform:translateY(-2px)}
+.ckd{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:2px}
+.ckd-h{font-size:13.5px;font-weight:800;color:var(--brand2);margin-bottom:10px}
+.ckd-h2{font-size:12.5px;color:var(--txt2);margin:12px 0 6px;font-weight:700}
+.ckd-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ckd-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:8px;margin-bottom:6px;transition:.15s}
+.ckd-row:hover{border-color:var(--brand2)}
+.ckd-row .ckd-p{font-weight:700;color:var(--txt);flex:1}
+.ckd-row small{font-weight:400}
+.ckd-imp{display:grid;grid-template-columns:86px 1fr;gap:8px 12px;font-size:12.5px;
+  line-height:1.7;padding:8px 0;border-bottom:1px dashed var(--line)}
+.ckd-imp .ckd-k{color:var(--brand2);font-weight:700}
+.ckd-imp .ckd-v{color:var(--txt)}
+.crop-detail{margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.ckd-meta{font-size:12.5px;color:var(--txt2);margin-bottom:10px}
+.ckd-adv{background:rgba(244,162,97,.08);border-left:3px solid var(--brand2);padding:9px 12px;
+  border-radius:6px;font-size:12.5px;color:var(--txt);margin-top:10px;line-height:1.7}

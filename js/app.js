@@ -599,6 +599,80 @@ function renderEval(){
 }
 
 /* ---------------- 风险-农业-保险耦合 ---------------- */
+/* 作物×灾害 影响与损失知识库（收获期/生长季定性研判，损失为典型幅度区间，具体以灾情核定为准） */
+const CROP_KB = {
+  "小麦":{hz:["连阴雨","干旱","大风"],imp:{"连阴雨":"灌浆/收获期遇连阴雨易籽粒霉变、穗发芽，品质降级，典型减产 10%–20%；田间机械收割受阻，收获期拉长。","干旱":"拔节-灌浆期干旱致穗小粒瘪、千粒重下降，典型减产 10%–20%。","大风":"成熟期大风易倒伏，机械收获损失加大，典型减产 5%–15%。"},"adv":"关注收获窗口天气滚动预报，抢晴收获；渍涝田提前清沟；倒伏田人工辅助收获减少落粒。"},
+  "水稻":{hz:["连阴雨","大风","低温"],imp:{"连阴雨":"成熟-收获期连阴雨致倒伏、穗上发芽（穗萌），米质下降，典型减产 10%–20%。","大风":"灌浆后期大风倒伏、落粒，典型减产 10%–25%；台风外围风害尤重。","低温":"灌浆期障碍型冷害致空秕粒增多，典型减产 10%–15%。"},"adv":"乳熟后期保持干湿交替促灌浆；大风前深水护苗；抢晴收脱，防穗芽。"},
+  "玉米":{hz:["连阴雨","大风","干旱","初霜冻"],imp:{"连阴雨":"成熟收获期连阴雨致果穗霉变、籽粒萌动，典型减产 10%–25%；晾晒困难品质降级。","大风":"大喇叭口后大风倒伏/茎折，灌浆中断，典型减产 15%–30%。","干旱":"抽雄-灌浆期干旱致秃尖缺粒，典型减产 10%–20%。","初霜冻":"未成熟遇初霜冻植株冻死、灌浆终止，含水率高致减产 15%–30%。"},"adv":"倒伏田及时扶正培土或机械收穗；霜冻前抢收青贮转化；收后及时烘干防霉变。"},
+  "大豆":{hz:["连阴雨","干旱"],imp:{"连阴雨":"鼓粒-收获期连阴雨致炸荚、籽粒霉变褐斑，典型减产 10%–20%。","干旱":"鼓粒期干旱致粒重下降，典型减产 10%–15%。"},"adv":"成熟后及时收获防炸荚；收后防潮储存。"},
+  "谷子":{hz:["连阴雨","干旱"],imp:{"连阴雨":"成熟期连阴雨致穗部霉变、鸟啄鼠害加重，典型减产 10%–15%。","干旱":"抽穗-灌浆期干旱致秕谷增多，典型减产 10%–20%。"},"adv":"谷穗下垂期防穗发芽，及时收割晾晒。"},
+  "马铃薯":{hz:["连阴雨","早霜冻"],imp:{"连阴雨":"收获期连阴雨致块茎田间腐烂、表皮破损带泥，商品率下降，减产 10%–20%。","早霜冻":"茎叶早霜冻枯迫使提前收获，块茎膨大不足，减产 10%–15%。"},"adv":"霜前抢收入库；储窖通风控湿防腐。"},
+  "花生":{hz:["连阴雨","干旱"],imp:{"连阴雨":"收获期连阴雨致荚果发芽、黄曲霉污染风险上升，减产 10%–20% 且品质降级。","干旱":"饱果期干旱致果仁不饱满，减产 10%–15%。"},"adv":"看荚果成熟度适时收获；收后迅速晾晒防水霉。"},
+  "油菜":{hz:["连阴雨","干旱"],imp:{"连阴雨":"秋播育苗期连阴雨致烂种烂苗、移栽推迟。","干旱":"播栽期秋旱致出苗不齐、苗弱。"},"adv":"抢墒/造墒播种，雨后及时排渍补苗。"},
+  "棉花":{hz:["连阴雨","大风"],imp:{"连阴雨":"吐絮期连阴雨致烂铃、僵瓣花增多，品质与售价双降，减产 10%–20%。","大风":"大风致棉株倒伏落蕾，减产 5%–15%。"},"adv":"及时采收吐絮桃，雨前抢收；推株并垄改善通风。"},
+  "苹果/猕猴桃":{hz:["大风","连阴雨","初霜冻"],imp:{"大风":"采前大风落果、碰擦伤，商品果率下降，减产 10%–20%。","连阴雨":"着色期连阴雨致糖度着色差、裂果，减产 5%–15%。","初霜冻":"采前初霜冻致果面冻伤、贮藏性变差。"},"adv":"加固架网防风；分期采收；雨后及时排水防裂。"},
+  "甘蔗":{hz:["大风","干旱"],imp:{"大风":"台风级大风致蔗茎倒伏折断、糖分积累受阻，减产 15%–30%。","干旱":"伸长期干旱致茎径变细、节间短，减产 10%–20%。"},"adv":"大风前捆蔗防倒；倒伏蔗及时扶起培土。"},
+  "烤烟":{hz:["连阴雨","大风"],imp:{"连阴雨":"成熟采烤期连阴雨致烟叶返青、烤后色泽差，均价下降 10%–20%。","大风":"大田后期大风折断烟株，减产 10%–15%。"},"adv":"成熟即采、密集烘烤；风前加固烟棚。"},
+  "荔枝/龙眼":{hz:["大风"],imp:{"大风":"采前大风落果、断枝，减产 15%–30%。"},"adv":"采前疏果稳果、加固枝条；风后及时采销落果伤果。"},
+  "香蕉":{hz:["大风"],imp:{"大风":"大风致假茎折断、果穗擦伤，全株损毁风险高，减产 20%–40%。"},"adv":"立桩绑束防风；风前提前采收大蕉串。"},
+  "茶叶":{hz:["干旱","大风"],imp:{"干旱":"秋旱致秋茶减产、叶片老化，减产 10%–15%。","大风":"风害致嫩梢机械损伤。"},"adv":"茶园铺草保墒；秋茶及时封园养树。"},
+  "红枣":{hz:["连阴雨","大风"],imp:{"连阴雨":"成熟期连阴雨致裂果、浆烂，减产 10%–25%。","大风":"落果加重。"},"adv":"雨前抢收或铺反光膜促干；采后及时烘干。"}
+};
+function coupleKpi(key){
+  const box=document.getElementById("coupleKpiDetail");
+  const cs=curData().counties;
+  const hi=cs.filter(c=>c.overall==="极高"||c.overall==="高")
+    .sort((a,b)=>(LEVEL_IDX[b.overall]||0)-(LEVEL_IDX[a.overall]||0));
+  const provCnt=k=>{const m={};cs.forEach(c=>{m[c.province]=(m[c.province]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);};
+  let html="";
+  if(key==="ext"){
+    html=`<div class="ckd-h">🔴 极高风险县（${hi.filter(c=>c.overall==="极高").length} 个）——建议立即启动风险减量巡查</div>`+
+      hi.filter(c=>c.overall==="极高").map(c=>rowCounty(c)).join("");
+  } else if(key==="high"){
+    const hs=hi.filter(c=>c.overall==="高");
+    html=`<div class="ckd-h">🟠 高风险县（${hs.length} 个）——按省分布</div><div class="ckd-chips">`+
+      provCnt("高").map(([p,n])=>`<span class="ins-chip">${p}：<b>${n}</b> 县</span>`).join("")+
+      `</div><div class="ckd-h2">前 18 县：</div>`+hs.slice(0,18).map(c=>rowCounty(c)).join("");
+  } else if(key==="crops"){
+    const cnt={};cs.forEach(c=>{if(c.overall==="极高"||c.overall==="高")(c.crops||[]).forEach(x=>cnt[x]=(cnt[x]||0)+1);});
+    html=`<div class="ckd-h">🌾 主栽作物风险暴露（高/极高风险县中种植次数，点击柱条看灾害影响画像）</div><div class="ckd-chips">`+
+      Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="ins-chip" style="cursor:pointer" onclick="showCropDetail('${k}')">${k}：<b>${v}</b></span>`).join("")+`</div>`;
+  } else if(key==="ins"){
+    const cnt={};cs.forEach(c=>(c.insuranceHints||[]).forEach(i=>cnt[i]=(cnt[i]||0)+1));
+    html=`<div class="ckd-h">🛡 可匹配指数保险类别（覆盖县数）</div><div class="ckd-chips">`+
+      Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="ins-chip">${k}：<b>${v}</b> 县</span>`).join("")+
+      `</div><div class="rank-note">映射基于四窗口灾害信号自动生成，投产前须经标的、阈值、基差与精算校准。</div>`;
+  } else if(key==="total"){
+    const m={};hi.forEach(c=>{m[c.province]=m[c.province]||{ext:0,hi:0};c.overall==="极高"?m[c.province].ext++:m[c.province].hi++;});
+    html=`<div class="ckd-h">📍 高/极高风险县按省分布（合计 ${hi.length} 县）</div>`+
+      Object.entries(m).sort((a,b)=>(b[1].ext*2+b[1].hi)-(a[1].ext*2+a[1].hi)).map(([p,v])=>
+        `<div class="ckd-row"><span class="ckd-p">${p}</span><span>极高 <b style="color:var(--lv-ext)">${v.ext}</b> · 高 <b style="color:var(--lv-high)">${v.hi}</b> · 小计 <b>${v.ext+v.hi}</b></span></div>`).join("");
+  }
+  box.innerHTML=html;
+  box.classList.remove("hidden");
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function rowCounty(c){
+  return `<div class="ckd-row" style="cursor:pointer" onclick="openDetail('${c.id}')"><span class="ckd-p"><span class="lv-dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${LEVEL_COLOR[c.overall]};margin-right:6px"></span>${c.county} <small style="color:var(--txt3)">${c.province}·${c.city}</small></span><span class="sub2">${c.windows[0]?c.windows[0].hazard:"—"}</span><span class="lv-badge lv-${c.overall}">${c.overall}</span></div>`;
+}
+function showCropDetail(crop){
+  const kb=CROP_KB[crop];
+  const box=document.getElementById("cropDetail");
+  const cs=curData().counties;
+  let hiN=0;const hzCnt={};
+  cs.forEach(c=>{if((c.crops||[]).includes(crop)&&(c.overall==="极高"||c.overall==="高")){hiN++;(c.windows||[]).forEach(w=>w.hazard.split(/[、/]/).forEach(x=>{x=x.trim();if(x)hzCnt[x]=(hzCnt[x]||0)+1;}));}});
+  const topHz=Object.entries(hzCnt).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}（${v} 县次）`).join("、");
+  const imp=kb?Object.entries(kb.imp).map(([k,v])=>`<div class="ckd-imp"><span class="ckd-k">${k}</span><span class="ckd-v">${v}</span></div>`).join(""):"<div class='sub2'>该作物暂无结构化风险画像，可参考同大类作物。</div>";
+  box.innerHTML=`<div class="ckd-h">🌾 ${crop} · 灾害影响与损失画像</div>
+    <div class="ckd-meta">高/极高风险县暴露 <b style="color:var(--brand2)">${hiN}</b> 县次 ｜ 高发灾害信号：${topHz||"—"}</div>
+    ${imp}
+    ${kb?`<div class="ckd-adv">💡 农事建议：${kb.adv}</div>`:""}
+    <div class="rank-note">影响与损失幅度为行业经验的定性研判区间（因品种、生育期、田管水平而异），供风险减量与保险匹配参考，不构成定损依据。</div>`;
+  box.classList.remove("hidden");
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ---------------- 风险-农业-保险耦合 ---------------- */
 function renderCouple(){
   const counties = curData().counties;
   const allCrops = new Set();
@@ -608,14 +682,14 @@ function renderCouple(){
     (c.insuranceHints||[]).forEach(x=>allIns.add(x));
   });
   const kpis = [
-    {cls:"ext",  num: counties.filter(c=>c.overall==="极高").length, lbl:"极高风险县"},
-    {cls:"high", num: counties.filter(c=>c.overall==="高").length,   lbl:"高风险县"},
-    {cls:"tot",  num: allCrops.size,                                  lbl:"主栽作物种类"},
-    {cls:"high", num: allIns.size,                                    lbl:"可匹配指数保险类别"},
-    {cls:"mid",  num: counties.filter(c=>c.overall==="极高"||c.overall==="高").length, lbl:"高/极高风险县（合计）"}
+    {key:"ext",   cls:"ext",  num: counties.filter(c=>c.overall==="极高").length, lbl:"极高风险县"},
+    {key:"high",  cls:"high", num: counties.filter(c=>c.overall==="高").length,   lbl:"高风险县"},
+    {key:"crops", cls:"tot",  num: allCrops.size,                                  lbl:"主栽作物种类"},
+    {key:"ins",   cls:"high", num: allIns.size,                                    lbl:"可匹配指数保险类别"},
+    {key:"total", cls:"mid",  num: counties.filter(c=>c.overall==="极高"||c.overall==="高").length, lbl:"高/极高风险县（合计）"}
   ];
   document.getElementById("coupleKpis").innerHTML = kpis.map(k=>`
-    <div class="kpi ${k.cls}"><div class="bar"></div><div class="num">${k.num}</div><div class="lbl">${k.lbl}</div></div>`).join("");
+    <div class="kpi ${k.cls}" style="cursor:pointer" title="点击展开详情" onclick="coupleKpi('${k.key}')"><div class="bar"></div><div class="num">${k.num}</div><div class="lbl">${k.lbl} ▾</div></div>`).join("");
 
   // 作物风险暴露
   const cropHi = {};
@@ -647,6 +721,8 @@ function renderCouple(){
         itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:"#f4a261"},{offset:1,color:"#e63946"}]), borderRadius:[0,6,6,0]},
         label:{show:true, position:"right", color:"#e8eefc", formatter:"{c}"}}]
     }, true);
+    c1.off("click");
+    c1.on("click", p=>{ if(p.name) showCropDetail(p.name); });
     setTimeout(()=>{ try{c1.resize();}catch(e){} }, 60);
 
     const c2 = charts.coupleIns || (charts.coupleIns = echarts.init(document.getElementById("coupleInsChart"), null, {renderer:"canvas"}));
