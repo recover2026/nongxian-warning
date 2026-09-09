@@ -28,6 +28,28 @@
 .err{color:#b91c1c;font-size:12.5px;margin-top:14px;min-height:16px;font-weight:600}
 .note{margin-top:20px;font-size:11px;color:#a8a29e;line-height:1.6}
 </style>
+<script>
+/* 登录逻辑内联：即使主功能脚本(app.js)网络加载失败，登录与提示依然可用 */
+var NX = { pw:"nongxian2026", authed:false };
+function doLogin(){
+  var v = document.getElementById("pw").value;
+  var err = document.getElementById("loginErr");
+  if(v !== NX.pw){ err.textContent = "口令错误，请重新输入"; return; }
+  err.textContent = "";
+  NX.authed = true;
+  try{ sessionStorage.setItem("nongxian_auth","1"); }catch(e){}
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  var boot = document.getElementById("boot");
+  if(window.enterApp){            // app.js 已就绪 → 正常走完整加载
+    boot.classList.remove("hidden");
+    window.enterApp();
+  } else {                        // app.js 加载失败 → 明确提示可重试，而非无响应
+    boot.classList.remove("hidden");
+    boot.innerHTML = "⚠️ 功能脚本加载失败（网络抖动）<br>请刷新页面重试<br><br><button class=ghost-btn onclick=location.reload()>↻ 刷新重试</button>";
+  }
+}
+</script>
 </head>
 <body>
 
