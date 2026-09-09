@@ -1,5 +1,223 @@
-*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#0a1428; --bg2:#0e1c38; --panel:#13233f; --panel2:#16294a;
+  --line:#27395f; --txt:#e8eefc; --txt2:#9fb2d4; --txt3:#6b80a8;
+  --red:#ff4d4f; --orange:#ff7a45; --amber:#ffc53d; --green:#52c41a;
+  --brand:#e63946; --brand2:#f4a261;
+  --lv-ext:#ff4d4f; --lv-high:#ff7a45; --lv-mid:#ffc53d; --lv-low:#52c41a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(1200px 600px at 70% -10%,#16294a 0%,var(--bg) 55%);color:var(--txt)}
+.hidden{display:none!important}
+a{color:var(--brand2);text-decoration:none}
+a:hover{text-decoration:underline}
 
+/* ---------- 登录 ---------- */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 45%,#fee2e2 100%)}
+.login-card{background:#fff;border-radius:20px;padding:42px 44px;width:384px;
+  box-shadow:0 24px 70px rgba(185,28,28,.16);text-align:center;animation:rise .5s ease}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.logo{width:84px;height:84px;margin-bottom:10px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(185,28,28,.18))}
+.login-card h1{font-size:21px;margin:4px 0 2px;color:#b91c1c;font-weight:800;letter-spacing:.5px}
+.divider{height:3px;width:56px;background:linear-gradient(90deg,#f59e0b,#b91c1c);border-radius:3px;margin:14px auto 18px}
+.sub{color:#92400e;font-size:13px;margin-bottom:22px;line-height:1.6}
+.login-card label{display:block;text-align:left;font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:600}
+.field input{width:100%;padding:12px 14px;border:1.5px solid #fde68a;border-radius:10px;font-size:14px;background:#fffbeb}
+.field input:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.15);background:#fff}
+.login-card button{width:100%;margin-top:20px;background:linear-gradient(90deg,#dc2626,#b91c1c);color:#fff;border:none;
+  padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+.login-card button:hover{filter:brightness(1.06)}
+.err{color:#b91c1c;font-size:12.5px;margin-top:14px;min-height:16px;font-weight:600}
+.note{margin-top:20px;font-size:11px;color:#a8a29e;line-height:1.6}
+
+/* ---------- 顶栏 ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;
+  background:linear-gradient(90deg,var(--bg2),#0b1830);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;letter-spacing:.5px}
+.brand-logo{width:34px;height:34px;padding:3px;background:rgba(255,255,255,.12);border-radius:50%;object-fit:contain}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.period-pill{background:var(--panel2);border:1px solid var(--line);color:var(--txt2);
+  padding:5px 12px;border-radius:20px;font-size:12.5px}
+.period-select{flex:0 0 auto;min-width:230px;width:auto;padding:6px 10px;border-radius:8px;font-size:13px;cursor:pointer}
+.ghost-btn{background:transparent;border:1px solid var(--line);color:var(--txt2);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+.ghost-btn:hover{border-color:var(--brand2);color:var(--txt)}
+.ghost-btn.sm{padding:3px 10px;border-radius:7px;font-size:12px}
+.map-toolbar{margin-left:auto;display:flex;align-items:center;gap:10px}
+.crumb{font-size:12.5px;font-weight:600;color:var(--brand2);letter-spacing:.3px;
+  background:rgba(56,120,220,.12);border:1px solid rgba(56,120,220,.3);padding:3px 12px;border-radius:20px}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:8px;padding:14px 22px 0}
+.tab{background:var(--panel);border:1px solid var(--line);color:var(--txt2);padding:9px 18px;border-radius:9px 9px 0 0;cursor:pointer;font-size:14px;font-weight:600}
+.tab.active{background:var(--panel2);color:#fff;border-bottom:2px solid var(--brand2)}
+
+/* ---------- 通用 panel ---------- */
+.view{padding:18px 22px 40px}
+.panel{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.panel-title .hint{font-weight:400;color:var(--txt3);font-size:11.5px}
+
+/* ---------- KPI ---------- */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi .num{font-size:30px;font-weight:800;line-height:1}
+.kpi .lbl{font-size:13px;color:var(--txt2);margin-top:8px}
+.kpi .bar{position:absolute;left:0;top:0;height:3px;width:100%}
+.kpi.tot .bar{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.kpi.ext .bar{background:var(--lv-ext)} .kpi.ext .num{color:var(--lv-ext)}
+.kpi.high .bar{background:var(--lv-high)} .kpi.high .num{color:var(--lv-high)}
+.kpi.mid .bar{background:var(--lv-mid)} .kpi.mid .num{color:var(--lv-mid)}
+.kpi.low .bar{background:var(--lv-low)} .kpi.low .num{color:var(--lv-low)}
+
+/* ---------- dashboard grid ---------- */
+.dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px}
+.map-panel{display:flex;flex-direction:column}
+.map-box{height:480px;width:100%}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--txt2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.side-col{display:flex;flex-direction:column;gap:16px}
+.chart-box{height:210px;width:100%}
+
+/* ---------- top list ---------- */
+.top-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.top-item{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}
+.top-item:hover{border-color:var(--brand2)}
+.top-item .lv-dot{width:10px;height:10px;border-radius:50%}
+.top-item .nm{font-size:13.5px;font-weight:600;flex:1}
+.top-item .hz{font-size:11.5px;color:var(--txt3)}
+
+/* ---------- toolbar / table ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.search,.select{flex:1;min-width:160px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+  padding:9px 12px;border-radius:9px;font-size:13.5px}
+.search:focus,.select:focus{outline:none;border-color:var(--brand2)}
+.primary-btn{background:linear-gradient(90deg,var(--brand),#c1121f);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-weight:700;cursor:pointer;font-size:13.5px}
+.primary-btn:hover{filter:brightness(1.08)}
+.table-wrap{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:68vh}
+.county-table{width:100%;border-collapse:collapse;font-size:13px}
+.county-table th{position:sticky;top:0;background:var(--panel2);color:var(--txt2);text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+.county-table td{padding:10px 12px;border-bottom:1px solid rgba(39,57,95,.5);vertical-align:middle}
+.county-table tr:hover{background:rgba(244,162,97,.06)}
+.county-table .nm{font-weight:600}
+.county-table .sub2{color:var(--txt3);font-size:11.5px}
+.lv-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;color:#1a1a1a}
+.lv-极高{background:var(--lv-ext);color:#fff}
+.lv-高{background:var(--lv-high)}
+.lv-中{background:var(--lv-mid)}
+.lv-低{background:var(--lv-low)}
+.mini-btn{background:transparent;border:1px solid var(--line);color:var(--brand2);padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;margin-right:6px}
+.mini-btn:hover{border-color:var(--brand2);background:rgba(244,162,97,.1)}
+.empty{text-align:center;color:var(--txt3);padding:30px}
+
+/* ---------- insurance ---------- */
+.ins-summary{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:4px}
+.ins-chip{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:13px}
+.ins-chip b{color:var(--brand2)}
+
+/* ---------- detail ---------- */
+.detail{position:fixed;right:0;top:0;height:100vh;width:min(720px,94vw);background:var(--bg2);border-left:1px solid var(--line);
+  box-shadow:-20px 0 60px rgba(0,0,0,.5);overflow:auto;z-index:50;animation:slidein .25s ease}
+@keyframes slidein{from{transform:translateX(40px);opacity:.4}to{transform:none;opacity:1}}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg2);z-index:2}
+.detail-title{font-size:18px;font-weight:800}
+.detail-sub{font-size:12.5px;color:var(--txt3);margin-top:4px}
+.detail-body{padding:18px 22px 50px}
+.detail-imgs{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.detail-imgs img{width:100%;border:1px solid var(--line);border-radius:10px;background:#0c1830}
+.block{margin-bottom:18px}
+.block-h{font-size:14px;font-weight:700;color:var(--brand2);margin-bottom:8px;border-left:3px solid var(--brand2);padding-left:8px}
+.block-c{font-size:13px;line-height:1.75;color:var(--txt);white-space:pre-wrap}
+.win-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+.win-table th,.win-table td{border:1px solid var(--line);padding:7px 9px;text-align:center}
+.win-table th{background:var(--panel2);color:var(--txt2)}
+.file-link{display:inline-block;margin:4px 8px 4px 0;background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:8px;font-size:12.5px}
+
+@media(max-width:980px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+}
+
+/* ---------- 指数保险研判 ---------- */
+.eval-hero{display:flex;flex-direction:column;gap:12px}
+.verdict-card{background:linear-gradient(135deg,rgba(82,196,26,.12),rgba(244,162,97,.08));border:1px solid rgba(82,196,26,.35);border-radius:12px;padding:14px 16px}
+.verdict-card .verdict-q{font-size:14px;font-weight:800;color:#fff;margin-bottom:6px}
+.verdict-card .verdict-a{font-size:13px;line-height:1.75;color:var(--txt)}
+.verdict-card .verdict-a.ok{border-left:3px solid var(--green);padding-left:12px;color:#d6f5c8}
+.eval-stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
+.eval-stats .st{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12.5px;color:var(--txt2)}
+.eval-stats .st b{color:var(--brand2);font-size:15px}
+.eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.eval-grid .panel{margin-bottom:0}
+.eval-block{margin-bottom:12px}
+.eval-block:last-child{margin-bottom:0}
+.eval-h{font-size:13px;font-weight:700;color:var(--brand2);margin:0 0 6px}
+.eval-block p{margin:0 0 6px;font-size:12.5px;line-height:1.8;color:var(--txt2)}
+.eval-block p b{color:var(--txt)}
+.eval-ul{margin:0;padding-left:18px;color:var(--txt2);font-size:12.5px;line-height:1.85}
+.eval-ul li{margin-bottom:3px}
+.eval-ul li b{color:var(--txt)}
+.disclaimer{margin-top:12px;font-size:11.5px;color:var(--txt3);line-height:1.7;border-top:1px dashed var(--line);padding-top:10px}
+.disclaimer b{color:var(--txt2)}
+@media(max-width:860px){.eval-grid{grid-template-columns:1fr}}
+
+/* ---------- 四窗口期时间轴 ---------- */
+.win-timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.win-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:8px}
+.win-head{display:flex;align-items:center;gap:8px}
+.win-idx{background:var(--brand2);color:#1a1a1a;font-weight:800;font-size:11px;padding:2px 8px;border-radius:20px}
+.win-name{font-weight:700;font-size:13.5px;color:#fff}
+.win-period{font-size:12px;color:var(--brand2);font-weight:600;letter-spacing:.3px}
+.win-lv .lv-badge{font-size:11.5px}
+.win-bars{display:flex;flex-direction:column;gap:4px}
+.wbar{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt2)}
+.wbar i{height:9px;border-radius:5px;min-width:2px;transition:width .4s}
+.wbar b{color:var(--txt);font-size:11px;min-width:20px;text-align:right}
+.win-hz{font-size:11px;color:var(--txt3);line-height:1.5}
+.win-hz b{color:var(--txt);font-weight:600}
+@media(max-width:860px){.win-timeline{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- 地图模式切换 ---------- */
+.map-toggle{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px;margin-right:4px}
+.map-toggle .tg{background:transparent;border:none;color:var(--txt2);padding:5px 13px;border-radius:6px;cursor:pointer;font-size:12.5px;font-weight:600}
+.map-toggle .tg.active{background:var(--brand2);color:#1a1a1a}
+
+/* ---------- 研判地图 / 星级（v15 增补） ---------- */
+.eval-map{height:520px;width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px}
+.star{color:#ffd24a;font-weight:800;margin-right:1px}
+
+/* 英文风险徽章类（耦合清单缺口状态 / 研判推荐等级使用） */
+.lv-ext{background:var(--lv-ext);color:#fff}
+.lv-high{background:var(--lv-high)}
+.lv-mid{background:var(--lv-mid)}
+.lv-low{background:var(--lv-low)}
+
+/* ---------- 地图加载/失败兜底（v17 增补） ---------- */
+.map-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  color:var(--txt2);font-size:13px;background:rgba(10,20,40,.72);z-index:5;text-align:center;line-height:1.8}
+
+/* ---------- 高风险县域排行榜弹窗 ---------- */
+.rank-modal{position:fixed;inset:0;background:rgba(3,8,16,.82);z-index:70;display:flex;
+  align-items:center;justify-content:center;padding:30px}
+.rank-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  width:680px;max-width:94vw;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.rank-hd{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);font-size:17px;font-weight:800;color:var(--brand2)}
+.rank-sub{font-size:12px;color:var(--txt2);font-weight:400}
+.rank-x{margin-left:auto;cursor:pointer;color:var(--txt2);font-size:20px;line-height:1}
+.rank-x:hover{color:var(--txt)}
+.rank-body{overflow-y:auto;padding:8px 16px 18px}
+.rank-body::-webkit-scrollbar{width:8px}
+.rank-body::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:4px}
+.rsec{font-size:12.5px;margin:14px 4px 8px;font-weight:800;letter-spacing:.5px}
+.rr{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  margin-bottom:6px;cursor:pointer;background:var(--bg2);transition:.15s}
+.rr:hover{border-color:var(--brand2);background:var(--panel2)}
+.rr .rk{width:30px;text-align:center;font-size:15px;font-weight:800;color:var(--txt2)}
+.rr .nm{font-size:14px;color:#fff;font-weight:700}
+.rr .hz2{font-size:11px;color:var(--txt3);margin-left:auto}
+.rr .lv-badge{flex:0 0 auto}
+.rank-note{font-size:11px;color:var(--txt3);text-align:center;padding:14px 0 6px;line-height:1.6}
 
 /* ---------- 耦合页 KPI 下钻详情 / 作物画像（v19 增补） ---------- */
 .kpi[onclick]{transition:.15s}
@@ -21,3 +239,7 @@
 .ckd-meta{font-size:12.5px;color:var(--txt2);margin-bottom:10px}
 .ckd-adv{background:rgba(244,162,97,.08);border-left:3px solid var(--brand2);padding:9px 12px;
   border-radius:6px;font-size:12.5px;color:var(--txt);margin-top:10px;line-height:1.7}
+
+/* ---------- 启动加载层（v18 增补） ---------- */
+.boot{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+  color:var(--txt2);font-size:15px;letter-spacing:1px;background:var(--bg)}
