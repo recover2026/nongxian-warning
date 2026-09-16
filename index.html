@@ -45,10 +45,27 @@ function doLogin(){
   if(window.enterApp){            // app.js 已就绪 → 正常走完整加载
     boot.classList.remove("hidden");
     window.enterApp();
-  } else {                        // app.js 加载失败 → 明确提示可重试，而非无响应
+  } else if (!window.__nxRetrying) {  // app.js 未就绪 → 自动重试注入一次（网络抖动自愈）
+    window.__nxRetrying = true;
     boot.classList.remove("hidden");
-    boot.innerHTML = "⚠️ 功能脚本加载失败（网络抖动）<br>请刷新页面重试<br><br><button class=ghost-btn onclick=location.reload()>↻ 刷新重试</button>";
+    boot.innerHTML = "⏳ 功能脚本加载中，正在重试…";
+    var sc = document.createElement("script");
+    sc.src = "./js/app.js?v=21&retry=" + Date.now();
+    sc.onload = function(){
+      if (window.enterApp) { boot.classList.add("hidden"); window.enterApp(); }
+      else showBootFail();
+    };
+    sc.onerror = showBootFail;
+    document.head.appendChild(sc);
+  } else {
+    showBootFail();
   }
+}
+function showBootFail(){
+  var boot = document.getElementById("boot");
+  if(!boot) return;
+  boot.classList.remove("hidden");
+  boot.innerHTML = "⚠️ 功能脚本加载失败（网络抖动）<br>请刷新页面重试<br><br><button class=ghost-btn onclick=location.reload()>↻ 刷新重试</button>";
 }
 </script>
 </head>
