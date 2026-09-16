@@ -15,11 +15,25 @@ let curProv = null;       // {adcode, name}
 let curCity = null;       // {adcode, name}
 let mapMode = "risk";     // 'risk' | 'ins'
 const INS_COLOR = { 0:"#46506a", 1:"#5b9bd5", 2:"#2f7fd1", 3:"#1c5fb0" };
-/* 附件基址：GitHub Pages 精简版不含 reports/，自动指向原站取附件；本地/原站部署仍用相对路径 */
+/* 附件基址：GitHub Pages 上附件取自本仓库 Releases（tag=reports-{期次}，asset 名={期次}__{文件名}）；
+   本地/原站部署仍用相对路径。png/jpg 文件名无日期后缀，靠 {期次}__ 前缀区分两期。 */
 const ASSETS_BASE = location.host.endsWith(".github.io")
-  ? "https://c12d944b49e34724a0ed76569c8b3110.app.workbuddy.link/"
+  ? "https://github.com/recover2026/nongxian-warning/releases/download/"
   : "./";
-function abs(u){ return /^https?:/.test(u) ? u : (ASSETS_BASE + String(u).replace(/^\.\//,"")); }
+function abs(u, c){
+  u = String(u);
+  if(/^https?:/.test(u)) return u;
+  if(!location.host.endsWith(".github.io")) return "./" + u.replace(/^\.\//,"");
+  const parts = u.split("/");
+  const period = parts[1] || "";
+  const base = parts.pop();
+  /* GitHub Releases asset 名不支持中文 → 用 ASCII 规则名：{期次}__{adcode}__{类型}.{扩展名} */
+  const kind = base.endsWith(".docx") ? "docx" : base.endsWith(".md") ? "md"
+    : base.includes("risk_stage") ? "stage" : base.includes("risk_intuitive") ? "intuitive" : "compr";
+  const ext = kind === "docx" ? ".docx" : kind === "md" ? ".md" : ".jpg";
+  const ad = c && c.adcode ? c.adcode : "";
+  return ASSETS_BASE + "reports-" + period + "/" + encodeURIComponent(period + "__" + ad + "__" + kind + ext);
+}
 const geoCache = {};      // `${lvl}:${adcode}` -> geojson
 
 /* 当前期次数据对象 */
@@ -433,8 +447,8 @@ function renderList(){
       <td class="sub2">${hz}</td>
       <td class="sub2">${(c.crops||[]).join("、")}</td>
       <td>
-        <button class="mini-btn" onclick="event.stopPropagation();dl('${c.files.docx}')">报告</button>
-        <button class="mini-btn" onclick="event.stopPropagation();dl('${c.files.md}')">MD</button>
+        <button class="mini-btn" onclick="event.stopPropagation();dl('${c.files.docx}','${c.adcode}')">报告</button>
+        <button class="mini-btn" onclick="event.stopPropagation();dl('${c.files.md}','${c.adcode}')">MD</button>
         <button class="mini-btn" onclick="event.stopPropagation();packOne('${c.id}')">打包</button>
       </td>
     </tr>`;
@@ -805,7 +819,7 @@ function openDetail(id){
   document.getElementById("dTitle").textContent = `${c.county}气象灾害风险预测`;
   document.getElementById("dSub").textContent = `${c.province} · ${c.city} · adcode ${c.adcode||"-"} · 整体风险【${c.overall}】`;
   document.getElementById("dImgs").innerHTML = (c.preview||c.files.png).map(p=>
-    `<img src="${abs(p)}" loading="lazy" alt="风险图">`).join("");
+    `<img src="${abs(p,c)}" loading="lazy" alt="风险图">`).join("");
   document.getElementById("dConclusion").textContent = stripMd(c.conclusion||"");
   document.getElementById("dWindows").innerHTML = `<table class="win-table"><tr><th>窗口</th><th>时段</th><th>主要灾害</th><th>等级</th></tr>` +
     c.windows.map(w=>`<tr><td>${w.name}</td><td>${w.period}</td><td>${w.hazard}</td><td><span class="lv-badge lv-${w.level}">${w.level}</span></td></tr>`).join("") + `</table>`;
@@ -813,9 +827,9 @@ function openDetail(id){
   document.getElementById("dIns").innerHTML = (c.insuranceHints||[]).map(i=>`<span class="ins-chip" style="margin:0 8px 8px 0;display:inline-block">${i}</span>`).join("") || "—";
   const f = c.files;
   document.getElementById("dFiles").innerHTML =
-    `<a class="file-link" href="${abs(f.docx)}" target="_blank">📄 报告 Word</a>` +
-    `<a class="file-link" href="${abs(f.md)}" target="_blank">📝 Markdown</a>` +
-    f.png.map((p,i)=>`<a class="file-link" href="${abs(p)}" target="_blank">🖼 图${i+1}</a>`).join("") +
+    `<a class="file-link" href="${abs(f.docx,c)}" target="_blank">📄 报告 Word</a>` +
+    `<a class="file-link" href="${abs(f.md,c)}" target="_blank">📝 Markdown</a>` +
+    f.png.map((p,i)=>`<a class="file-link" href="${abs(p,c)}" target="_blank">🖼 图${i+1}</a>`).join("") +
     `<button class="mini-btn" onclick="packOne('${c.id}')">⬇ 打包下载本县附件</button>`;
   document.getElementById("detail").classList.remove("hidden");
 }
@@ -823,7 +837,7 @@ function closeDetail(){ document.getElementById("detail").classList.add("hidden"
 function stripMd(s){ return (s||"").replace(/^\s*>\s?/gm,"").replace(/\*\*/g,"").replace(/\|/g," ").replace(/\n{2,}/g,"\n").trim(); }
 
 /* ---------------- 下载 ---------------- */
-function dl(url){ const a=document.createElement("a"); a.href=abs(url); a.download=""; document.body.appendChild(a); a.click(); a.remove(); }
+function dl(url, ad){ const a=document.createElement("a"); a.href=abs(url, {adcode: ad}); a.download=""; document.body.appendChild(a); a.click(); a.remove(); }
 
 async function packOne(id){
   const c = curData().counties.find(x=>x.id===id);
