@@ -357,5 +357,25 @@ function showBootFail(){
 <script src="./lib/echarts.min.js"></script>
 <script src="./lib/jszip.min.js"></script>
 <script src="./js/app.js?v=22"></script>
+
 </body>
 </html>
+<!-- ===== AI融合作战台覆盖层（自动注入·追加式·不改既有结构） ===== -->
+<button id="aiFusionBtn" style="position:fixed;right:18px;bottom:18px;z-index:9998;background:#1a6b8a;color:#fff;border:none;border-radius:24px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22);font-family:inherit;">AI预警作战</button>
+<div id="aiFusionPanel" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(20,20,20,.5);">
+  <div style="position:absolute;right:0;top:0;bottom:0;width:min(1000px,94vw);background:#fff;box-shadow:-6px 0 30px rgba(0,0,0,.25);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #e3ded3;background:#faf8f4;">
+      <b style="font-size:14px;color:#1a6b8a;">气象预警作战台</b>
+      <button onclick="document.getElementById('aiFusionPanel').style.display='none'" style="border:none;background:#eee;color:#444;border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;">×</button>
+    </div>
+    <iframe id="aiFusionFrame" name="aiFusionFrame" src="fusion_weather_warboard.html" style="width:100%;flex:1;border:0;"></iframe>
+  </div>
+</div>
+<script>
+  (function(){
+    var b=document.getElementById('aiFusionBtn');
+    if(b) b.onclick=function(){document.getElementById('aiFusionPanel').style.display='block';};
+    document.getElementById('aiFusionPanel').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+  })();
+</script>
+<!-- ===== /AI融合作战台覆盖层 ===== -->
