@@ -89,6 +89,7 @@ function bootUI(){
   renderList();
   renderInsurance();
   if(window.echarts && CHINA){ renderMap(); }
+  applyHash();
 }
 
 function buildPeriodFilter(){
@@ -136,11 +137,32 @@ function switchView(v){
   }
   if(v==="eval"){ renderEval(); }
   if(v==="couple"){ renderCouple(); }
+  if(v==="trend"){
+    renderTrend();
+    setTimeout(()=>{ Object.values(charts).forEach(c=>{ try{c.resize();}catch(e){} }); }, 60);
+  }
 }
 
 /* ---------------- 风险大屏 ---------------- */
 function renderDashboard(){
   const s = curData().summary;
+  // 最新一期 / 当前期次 横幅
+  const ps = DATA.periods.slice().sort((a,b)=>a.period.localeCompare(b.period));
+  const idx = ps.findIndex(p=>p.period===curData().period);
+  const prev = idx>0 ? ps[idx-1] : null;
+  const hi = (pp)=> (pp.summary["极高"]||0)+(pp.summary["高"]||0);
+  const delta = prev ? hi(curData())-hi(prev) : 0;
+  const isLatest = idx===ps.length-1;
+  const bn = document.getElementById("newPeriodBanner");
+  if(bn){
+    bn.innerHTML = `<div class="pb-main">`+
+      `<span class="pb-tag ${isLatest?'latest':'cur'}">${isLatest?'最新一期':'当前期次'}</span>`+
+      `<b class="pb-period">${curData().periodLabel||curData().period}</b>`+
+      `<span class="pb-stat">极高 <b style="color:#ff4d4f">${s["极高"]||0}</b> · 高 <b style="color:#ff7a45">${s["高"]||0}</b> · 中 <b style="color:#ffc53d">${s["中"]||0}</b> · 低 <b style="color:#52c41a">${s["低"]||0}</b></span>`+
+      (prev?`<span class="pb-delta ${delta>0?'up':delta<0?'down':'flat'}">${delta>0?'↑':delta<0?'↓':'＝'} 较上期高风险县 ${delta>0?'+':''}${delta}</span>`:"")+
+      `<button class="mini-btn" onclick="copyPeriodSummary()">📋 复制摘要</button>`+
+      `</div>`;
+  }
   const kpis = [
     {cls:"tot", num:curData().total, lbl:"覆盖县域（个）"},
     {cls:"ext", num:s["极高"]||0, lbl:"极高等级"},
@@ -238,6 +260,99 @@ function renderTopList(){
       <span class="nm">${c.county}</span>
       <span class="hz">${c.province}·${c.windows[0]?c.windows[0].hazard:""}</span>
     </div>`).join("");
+}
+
+/* ---------------- 跨期趋势（v22 增补） ---------------- */
+let trendRows = [];   // 连续高风险县榜（renderTrendTable 填充）
+function trendPeriods(){
+  return DATA.periods.slice().sort((a,b)=>a.period.localeCompare(b.period));
+}
+function renderTrend(){
+  if(!window.echarts) return;
+  const ps = trendPeriods();
+  const x = ps.map(p=>p.period.slice(5));   // MM-DD
+  const chart = charts.trendLine || (charts.trendLine = echarts.init(document.getElementById("trendLine"), null, {renderer:"canvas"}));
+  chart.setOption({
+    tooltip:{trigger:"axis"},
+    legend:{data:LEVEL_ORDER, textStyle:{color:"#9fb2d4"}, top:0},
+    grid:{left:8,right:20,top:34,bottom:6,containLabel:true},
+    xAxis:{type:"category", boundaryGap:false, data:x,
+      axisLabel:{color:"#9fb2d4"}, axisLine:{lineStyle:{color:"#27395f"}}},
+    yAxis:{type:"value", axisLabel:{color:"#9fb2d4"}, splitLine:{lineStyle:{color:"#1c2c4a"}}},
+    series: LEVEL_ORDER.map(l=>({
+      name:l, type:"line", smooth:true, symbolSize:6,
+      itemStyle:{color:LEVEL_COLOR[l]}, lineStyle:{color:LEVEL_COLOR[l], width:2.5},
+      data: ps.map(p=>p.summary[l]||0)
+    }))
+  }, true);
+  renderTrendTable();
+}
+function renderTrendTable(){
+  const ps = trendPeriods();
+  const n = ps.length;
+  const acc = {};
+  ps.forEach(p=>{
+    p.counties.forEach(c=>{
+      if(c.overall!=="极高" && c.overall!=="高") return;
+      const a = acc[c.id] || (acc[c.id] = {id:c.id, county:c.county, city:c.city, province:c.province, occ:[]});
+      a.occ.push({period:p.period, overall:c.overall, hazard:(c.windows&&c.windows[0]&&c.windows[0].hazard)||""});
+    });
+  });
+  trendRows = Object.values(acc).filter(a=>a.occ.length>=3)
+    .sort((a,b)=> b.occ.length-a.occ.length
+      || rankOf(b.occ[b.occ.length-1].overall)-rankOf(a.occ[a.occ.length-1].overall)
+      || a.county.localeCompare(b.county,"zh"));
+  const curIds = new Set(curData().counties.map(c=>c.id));
+  const tb = document.getElementById("trendBody");
+  document.getElementById("trendEmpty").classList.toggle("hidden", trendRows.length>0);
+  tb.innerHTML = trendRows.map(a=>{
+    const last = a.occ[a.occ.length-1];
+    const dots = ps.map(p=>{
+      const o = a.occ.find(x=>x.period===p.period);
+      return `<i title="${p.period}${o?("："+o.overall):"：未上榜"}" style="background:${o?LEVEL_COLOR[o.overall]:"#2a3a5e"}"></i>`;
+    }).join("");
+    const btn = curIds.has(a.id)
+      ? `<button class="mini-btn" onclick="event.stopPropagation();openDetail('${a.id}')">本期详情</button>` : `<span class="sub2">本期未上榜</span>`;
+    return `<tr style="cursor:pointer" onclick="renderTrendCounty('${a.id}')">
+      <td><span class="nm">${a.province}·${a.county}</span></td>
+      <td><b style="color:var(--brand2)">${a.occ.length}</b><span class="sub2"> / ${n} 期</span></td>
+      <td><span class="lv-badge lv-${last.overall}">${last.overall}</span></td>
+      <td class="sub2">${last.hazard||"—"}</td>
+      <td><span class="tr-dots">${dots}</span></td>
+      <td>${btn}</td>
+    </tr>`;
+  }).join("");
+  if(trendRows.length){ renderTrendCounty(trendRows[0].id); }
+}
+function renderTrendCounty(id){
+  const ps = trendPeriods();
+  let name = "", rows = [];
+  ps.forEach(p=>{
+    const c = p.counties.find(x=>x.id===id);
+    if(c){ name = `${c.province}·${c.city||""}·${c.county}`; rows.push({p:p.period, lv:c.overall, hz:(c.windows&&c.windows[0]&&c.windows[0].hazard)||""}); }
+  });
+  if(!rows.length) return;
+  const nm = document.getElementById("trendCountyName");
+  if(nm) nm.textContent = "（" + name + "）";
+  if(!window.echarts) return;
+  const chart = charts.trendCounty || (charts.trendCounty = echarts.init(document.getElementById("trendCounty"), null, {renderer:"canvas"}));
+  chart.setOption({
+    tooltip:{trigger:"axis", formatter:(items)=>{
+      const r = rows[items[0].dataIndex];
+      return `${r.p}<br/>等级：<b>${r.lv}</b><br/>首窗灾害：${r.hz||"—"}`;
+    }},
+    grid:{left:8,right:20,top:24,bottom:6,containLabel:true},
+    xAxis:{type:"category", data:ps.map(p=>p.period.slice(5)),
+      axisLabel:{color:"#9fb2d4"}, axisLine:{lineStyle:{color:"#27395f"}}},
+    yAxis:{type:"value", min:0, max:4, interval:1,
+      axisLabel:{color:"#9fb2d4", formatter:v=>({1:"低",2:"中",3:"高",4:"极高"}[v]||"")},
+      splitLine:{lineStyle:{color:"#1c2c4a"}}},
+    series:[{type:"line", step:"middle", symbolSize:10,
+      data:rows.map(r=>LEVEL_IDX[r.lv]||1),
+      lineStyle:{color:"#f4a261", width:2.5},
+      itemStyle:{color:p=>LEVEL_COLOR[ofRank(p.value)]||"#f4a261"},
+      areaStyle:{color:"rgba(244,162,97,.08)"}}]
+  }, true);
 }
 
 /* ---------------- 地图（省 → 市 → 县 三级下钻） ---------------- */
@@ -830,11 +945,48 @@ function openDetail(id){
     `<a class="file-link" href="${abs(f.docx,c)}" target="_blank">📄 报告 Word</a>` +
     `<a class="file-link" href="${abs(f.md,c)}" target="_blank">📝 Markdown</a>` +
     f.png.map((p,i)=>`<a class="file-link" href="${abs(p,c)}" target="_blank">🖼 图${i+1}</a>`).join("") +
-    `<button class="mini-btn" onclick="packOne('${c.id}')">⬇ 打包下载本县附件</button>`;
+    `<button class="mini-btn" onclick="packOne('${c.id}')">⬇ 打包下载本县附件</button>` +
+    `<button class="mini-btn" onclick="copyCountyLink('${c.id}')">🔗 复制分享链接</button>`;
+  try{ location.hash = "c=" + encodeURIComponent(c.adcode||c.id) + "&p=" + encodeURIComponent(curData().period); }catch(e){}
   document.getElementById("detail").classList.remove("hidden");
 }
 function closeDetail(){ document.getElementById("detail").classList.add("hidden"); }
 function stripMd(s){ return (s||"").replace(/^\s*>\s?/gm,"").replace(/\*\*/g,"").replace(/\|/g," ").replace(/\n{2,}/g,"\n").trim(); }
+
+/* ---------------- 分享 / 横幅 ---------------- */
+function toast(msg){
+  let t=document.getElementById("toast");
+  if(!t){ t=document.createElement("div"); t.id="toast"; t.className="toast"; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),1900);
+}
+function copyCountyLink(id){
+  const c = curData().counties.find(x=>x.id===id); if(!c) return;
+  const url = location.origin + location.pathname + "#c=" + encodeURIComponent(c.adcode||c.id) + "&p=" + encodeURIComponent(curData().period);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>toast("分享链接已复制")).catch(()=>prompt("复制此链接：",url));
+  } else { prompt("复制此链接：",url); }
+}
+function copyPeriodSummary(){
+  const cur = curData(); const s = cur.summary;
+  const txt = `【农险气象预警 ${cur.periodLabel||cur.period}】覆盖 ${cur.total} 县：极高 ${s["极高"]||0}、高 ${s["高"]||0}、中 ${s["中"]||0}、低 ${s["低"]||0}。` +
+    (((s["极高"]||0)+(s["高"]||0))?` 高风险县合计 ${((s["极高"]||0)+(s["高"]||0))}。`:"") +
+    ` ENSO：强—极强厄尔尼诺持续至 2027 年 1—3 月概率 >83%（NOAA CPC 2026-10-08）。`;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast("摘要已复制")).catch(()=>prompt("复制此摘要：",txt));
+  } else { prompt("复制此摘要：",txt); }
+}
+function applyHash(){
+  const h = (location.hash||"").replace(/^#/,"");
+  const m = h.match(/c=([^&]+)/); if(!m) return;
+  const ad = decodeURIComponent(m[1]);
+  const pm = h.match(/p=([^&]+)/);
+  const want = pm ? decodeURIComponent(pm[1]) : curPeriod;
+  const periods = DATA.periods.map(p=>p.period);
+  if(periods.includes(want) && want!==curPeriod){ switchPeriod(want); }
+  const c = curData().counties.find(x=>String(x.adcode)===String(ad));
+  if(c){ setTimeout(()=>openDetail(c.id), 150); }
+}
 
 /* ---------------- 下载 ---------------- */
 function dl(url, ad){ const a=document.createElement("a"); a.href=abs(url, {adcode: ad}); a.download=""; document.body.appendChild(a); a.click(); a.remove(); }
