@@ -368,7 +368,231 @@ function showBootFail(){
       <b style="font-size:14px;color:#1a6b8a;">气象预警作战台</b>
       <button onclick="document.getElementById('aiFusionPanel').style.display='none'" style="border:none;background:#eee;color:#444;border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;">×</button>
     </div>
-    <iframe id="aiFusionFrame" name="aiFusionFrame" src="fusion_weather_warboard.html" style="width:100%;flex:1;border:0;"></iframe>
+    <iframe id="aiFusionFrame" name="aiFusionFrame" srcdoc="<!DOCTYPE html>
+<html lang=&quot;zh-CN&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot; />
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; />
+<title>气象预警作战台 · AI融合模块</title>
+<style>
+  :root{
+    --bg:#f7fafb; --panel:#ffffff; --panel2:#eef4f6; --border:#d9e2e6;
+    --txt:#22303a; --txt2:#5f7480; --accent:#1a6b8a; --accent2:#0f4d66;
+    --xh:#1a4fd6; --h:#5aa2f8; --m:#f0a850; --l:#b88a5e;
+    --shadow:0 2px 10px rgba(40,90,110,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:&quot;Microsoft YaHei&quot;,&quot;PingFang SC&quot;,sans-serif;}
+  html,body{background:var(--bg);color:var(--txt);font-size:13.5px;line-height:1.6;}
+  .top{background:linear-gradient(95deg,#fff,#eaf3f6);border-bottom:1px solid var(--border);padding:12px 18px;position:sticky;top:0;z-index:20;}
+  .top h1{font-size:16px;color:var(--accent2);letter-spacing:.5px;}
+  .top p{font-size:11.5px;color:var(--txt2);margin-top:2px;}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px 18px 60px;}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .btn{border:1px solid var(--border);background:var(--panel);color:var(--txt);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;transition:.15s;}
+  .btn:hover{border-color:var(--accent);color:var(--accent2);}
+  .btn.pri{background:var(--accent);color:#fff;border-color:transparent;}
+  input,select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px;background:#fff;color:var(--txt);font-family:inherit;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px;}
+  .card h2{font-size:13.5px;color:var(--accent2);margin-bottom:10px;border-left:3px solid var(--accent);padding-left:8px;}
+  .card h3{font-size:12.5px;margin:10px 0 5px;}
+  .muted{color:var(--txt2);font-size:11.5px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
+  th,td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
+  th{background:var(--panel2);font-weight:600;}
+  .tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+  .t-xh{background:#1a4fd6;color:#fff;} .t-h{background:#5aa2f8;color:#fff;}
+  .t-m{background:#f0a850;color:#fff;} .t-l{background:#b88a5e;color:#fff;}
+  .alert{border-radius:10px;padding:9px 12px;margin:6px 0;font-size:12px;border:1px solid;}
+  .a-xh{background:#e8eefe;border-color:#a9c2f5;color:#16368f;}
+  .a-h{background:#eaf3fc;border-color:#b9d6f3;color:#1c5aa0;}
+  .a-m{background:#fdf4e6;border-color:#ecd9a8;color:#8a6512;}
+  .pill{font-size:11px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;color:var(--txt2);}
+  .scroll{max-height:480px;overflow:auto;}
+  .lv{font-weight:700;}
+  .note{font-size:11px;color:var(--txt2);background:var(--panel2);border:1px dashed var(--border);border-radius:8px;padding:8px 10px;margin-top:8px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:880px){.grid2{grid-template-columns:1fr;}}
+  .kpi{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0;}
+  .kpi .b{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;}
+  .kpi .b b{display:block;font-size:18px;color:var(--accent2);}
+  .kpi .b span{font-size:11px;color:var(--txt2);}
+</style>
+</head>
+<body>
+<div class=&quot;top&quot;>
+  <h1>气象预警作战台 · AI融合模块</h1>
+  <p>载入60天县级风险报告 → 自动生成预警报告 + 灾中管护指引（作物专属）+ 遥感AI定损入口 ｜ 规则引擎秒级，不依赖网络</p>
+</div>
+
+<div class=&quot;wrap&quot;>
+  <div class=&quot;bar&quot;>
+    <button class=&quot;btn pri&quot; onclick=&quot;loadDemo()&quot;>载入介休市样本（高风险·四窗口）</button>
+    <span class=&quot;pill&quot;>从平台 reports.json 选县</span>
+    <select id=&quot;selCounty&quot;><option value=&quot;&quot;>— 选择 —</option></select>
+    <button class=&quot;btn&quot; onclick=&quot;loadFromReports()&quot;>载入</button>
+    <span id=&quot;srcInfo&quot; class=&quot;muted&quot;></span>
+  </div>
+
+  <div id=&quot;dashboard&quot; class=&quot;hide&quot;>
+    <div class=&quot;card&quot;>
+      <h2>① 县域气象灾害风险概览</h2>
+      <div class=&quot;kpi&quot; id=&quot;kpi&quot;></div>
+      <table id=&quot;winTbl&quot;></table>
+    </div>
+
+    <div class=&quot;grid2&quot;>
+      <div class=&quot;card&quot;>
+        <h2>② 灾中管护指引（作物×窗口·规则生成）</h2>
+        <div class=&quot;scroll&quot; id=&quot;guide&quot;></div>
+      </div>
+      <div class=&quot;card&quot;>
+        <h2>③ 遥感AI定损 · 调度入口</h2>
+        <div id=&quot;lossAdj&quot;></div>
+        <div class=&quot;note&quot;>定损优先级由最高风险窗口的灾害类型与作物决定；灾后调用遥感AI定损模型快速出损失估算，前置理赔资源。</div>
+      </div>
+    </div>
+
+    <div class=&quot;card&quot;>
+      <h2>④ 县级气象灾害预警报告（自动生成·可下载）</h2>
+      <div class=&quot;scroll&quot; id=&quot;report&quot; style=&quot;max-height:460px;&quot;></div>
+      <div class=&quot;bar&quot; style=&quot;margin-top:10px;&quot;>
+        <button class=&quot;btn&quot; onclick=&quot;copyReport()&quot;>复制报告</button>
+        <button class=&quot;btn&quot; onclick=&quot;dlReport()&quot;>下载 .md</button>
+      </div>
+    </div>
+  </div>
+
+  <div id=&quot;placeholder&quot; class=&quot;card&quot;><p class=&quot;muted&quot;>尚未载入报告。点击「载入介休市样本」开始，或选择平台 reports.json 中的县域。</p></div>
+</div>
+
+<script>
+/* 管护指引库：依据 灾害类型 × 农事动作，规则化生成（源自多期报告&quot;风险减量要点&quot;沉淀） */
+const GUIDE={
+  &quot;强降水/暴雨/连阴雨&quot;:[&quot;抢晴收晒、通风防霉、适时烘干&quot;,&quot;已熟作物优先抢收，防穗发芽/籽粒霉变&quot;,&quot;田间开沟排水，降低渍涝与病害风险&quot;],
+  &quot;连阴雨&quot;:[&quot;抢晴收晒、通风防霉、适时烘干&quot;,&quot;光照不足，监测病害（穗腐/叶斑/稻瘟），适时施药&quot;,&quot;已熟地块优先调度理赔预赔资源&quot;],
+  &quot;大风&quot;:[&quot;加固设施大棚、果树支架，暂缓喷施农药&quot;,&quot;高秆作物与设施农业倒伏/受损风险上升，提前抢收近成熟地块&quot;],
+  &quot;初霜冻/低温&quot;:[&quot;初霜冻前抢收易受冻作物&quot;,&quot;设施农业夜间保温覆盖，防幼苗冻害&quot;,&quot;畜禽水产备好保温与饲草储备&quot;],
+  &quot;高温热害/高温&quot;:[&quot;高温时段暂缓喷施，改清晨/傍晚作业&quot;,&quot;灌溉补墒降温，防高温逼熟与花粉败育&quot;,&quot;畜禽水产加强通风降温与增氧&quot;],
+  &quot;秋旱&quot;:[&quot;适时灌溉补墒，保秋收作物灌浆&quot;,&quot;监测旱情发展，提前安排抗旱机具与水源&quot;]
+};
+function guideFor(hazard){
+  for(const k in GUIDE){ if(hazard.indexOf(k.split('/')[0])>=0 || k.indexOf(hazard)>=0) return GUIDE[k]; }
+  if(/雨/.test(hazard)) return GUIDE[&quot;连阴雨&quot;];
+  if(/风/.test(hazard)) return GUIDE[&quot;大风&quot;];
+  if(/霜|低温|冻/.test(hazard)) return GUIDE[&quot;初霜冻/低温&quot;];
+  if(/高温|热/.test(hazard)) return GUIDE[&quot;高温热害/高温&quot;];
+  if(/旱/.test(hazard)) return GUIDE[&quot;秋旱&quot;];
+  return [&quot;常规风险减量提醒与监测，关注窗口内主要灾害演变&quot;];
+}
+const LVCLASS={&quot;极高&quot;:&quot;t-xh&quot;,&quot;高&quot;:&quot;t-h&quot;,&quot;中&quot;:&quot;t-m&quot;,&quot;低&quot;:&quot;t-l&quot;};
+const LVTXT={&quot;极高&quot;:&quot;极高风险&quot;,&quot;高&quot;:&quot;高风险&quot;,&quot;中&quot;:&quot;中风险&quot;,&quot;低&quot;:&quot;低风险&quot;};
+
+/* 样本：介休市（来源 web/reports 2026-09-14，高风险四窗口） */
+const DEMO={id:&quot;山西省_晋中_介休市&quot;,province:&quot;山西省&quot;,city:&quot;晋中&quot;,county:&quot;介休市&quot;,
+  overall:&quot;高&quot;,period:&quot;2026-09-14 ~ 2026-11-05&quot;,
+  windows:[
+    {name:&quot;窗口一&quot;,period:&quot;09-14~09-28&quot;,hazard:&quot;大风&quot;,level:&quot;中&quot;},
+    {name:&quot;窗口二&quot;,period:&quot;09-29~10-13&quot;,hazard:&quot;连阴雨/大风&quot;,level:&quot;高&quot;},
+    {name:&quot;窗口三&quot;,period:&quot;10-14~10-28&quot;,hazard:&quot;连阴雨&quot;,level:&quot;中&quot;},
+    {name:&quot;窗口四&quot;,period:&quot;10-29~11-12&quot;,hazard:&quot;连阴雨/低温&quot;,level:&quot;中&quot;}
+  ],
+  crops:[&quot;谷子&quot;,&quot;玉米&quot;,&quot;小麦&quot;]};
+
+let CUR=null, REPORTS=null;
+async function initReports(){
+  try{
+    const r=await fetch('data/reports.json'); if(!r.ok) return;
+    REPORTS=await r.json();
+    const last=REPORTS.periods[REPORTS.periods.length-1];
+    const sel=document.getElementById('selCounty');
+    last.counties.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.county+'（'+c.province+'·'+c.overall+'）'; sel.appendChild(o); });
+    document.getElementById('srcInfo').textContent='已接入 '+last.counties.length+' 县（'+last.period+' 期）';
+  }catch(e){ document.getElementById('srcInfo').textContent='（独立打开，未接入 reports.json，可用样本）'; }
+}
+function loadDemo(){ CUR=DEMO; render(); }
+async function loadFromReports(){
+  if(!REPORTS){ alert('未接入 reports.json，请先载入样本。'); return; }
+  const id=document.getElementById('selCounty').value; if(!id) return;
+  const last=REPORTS.periods[REPORTS.periods.length-1];
+  const c=last.counties.find(x=>x.id===id); if(!c) return;
+  CUR={id:c.id,province:c.province,city:c.city,county:c.county,overall:c.overall,
+    period:last.periodLabel, windows:c.windows, crops:c.crops};
+  render();
+}
+
+function render(){
+  document.getElementById('placeholder').classList.add('hide');
+  document.getElementById('dashboard').classList.remove('hide');
+  const c=CUR;
+  const top=c.windows.reduce((a,b)=> (lvRank(b.level)>lvRank(a.level)?b:a), c.windows[0]);
+  document.getElementById('kpi').innerHTML=
+    `<div class=&quot;b&quot;><b>${c.county}</b><span>${c.province}·${c.city}</span></div>
+     <div class=&quot;b&quot;><b style=&quot;color:${lvColor(c.overall)}&quot;>${LVTXT[c.overall]}</b><span>整体风险等级</span></div>
+     <div class=&quot;b&quot;><b>${c.windows.length}</b><span>气象窗口</span></div>
+     <div class=&quot;b&quot;><b style=&quot;color:${lvColor(top.level)}&quot;>${top.name} ${top.level}</b><span>最高风险窗口（${top.hazard}）</span></div>
+     <div class=&quot;b&quot;><b>${c.crops.length}</b><span>主栽作物</span></div>`;
+  let t='<tr><th>气象窗口</th><th>时段</th><th>主要灾害</th><th>风险等级</th></tr>';
+  c.windows.forEach(w=>{ t+=`<tr><td>${w.name}</td><td>${w.period}</td><td>${w.hazard}</td><td><span class=&quot;tag ${LVCLASS[w.level]}&quot;>${w.level}</span></td></tr>`; });
+  document.getElementById('winTbl').innerHTML=t;
+
+  let g='';
+  c.windows.forEach(w=>{
+    const tips=guideFor(w.hazard);
+    g+=`<div style=&quot;border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin:7px 0;&quot;>
+      <div class=&quot;row&quot;><b>${w.name}（${w.period}）</b><span class=&quot;tag ${LVCLASS[w.level]}&quot;>${w.level}·${w.hazard}</span></div>
+      <div class=&quot;lv&quot; style=&quot;margin:4px 0;color:${lvColor(w.level)}&quot;>对 ${c.crops.join('、')} 的管护要点：</div>
+      <ul style=&quot;margin:0 0 0 18px;&quot;>${tips.map(x=>'<li>'+x+'</li>').join('')}</ul>
+    </div>`;
+  });
+  document.getElementById('guide').innerHTML=g;
+
+  const adj=top.level==='极高'||top.level==='高';
+  document.getElementById('lossAdj').innerHTML=
+    `<div class=&quot;alert ${adj?'a-h':'a-m'}&quot;>${adj?'⚠ 高/极高风险窗口，建议<b>灾后立即启动遥感AI定损</b>。':'风险中等，常规灾后查勘即可。'}</div>
+     <div style=&quot;font-size:12px;&quot;>
+       <div class=&quot;row&quot;><span>定损优先级</span><b>${adj?'高（前置理赔预赔资源）':'常规'}</b></div>
+       <div class=&quot;row&quot;><span>主导灾害</span><b>${top.hazard}</b></div>
+       <div class=&quot;row&quot;><span>影响作物</span><b>${c.crops.join('、')}</b></div>
+     </div>
+     <button class=&quot;btn pri&quot; style=&quot;margin-top:8px;&quot; onclick=&quot;alert('调用遥感AI定损模型：上传灾后遥感影像→自动勾绘受损地块→输出损失估算与赔付建议（对接农险理赔系统）。')&quot;>启动遥感AI定损</button>`;
+
+  const rep=buildReport(c);
+  document.getElementById('report').innerHTML=rep.html;
+  window.__rep=rep.md;
+}
+
+function lvRank(l){return {&quot;极高&quot;:3,&quot;高&quot;:2,&quot;中&quot;:1,&quot;低&quot;:0}[l]||0;}
+function lvColor(l){return {&quot;极高&quot;:&quot;#1a4fd6&quot;,&quot;高&quot;:&quot;#5aa2f8&quot;,&quot;中&quot;:&quot;#f0a850&quot;,&quot;低&quot;:&quot;#b88a5e&quot;}[l]||&quot;#888&quot;;}
+
+function buildReport(c){
+  let html=`<h3>${c.county}气象灾害风险预警报告</h3>
+    <p class=&quot;muted&quot;>基准 ${c.period} ｜ 精度：区县级 ｜ 出具：阳光产险农险部 AI 预警作战台 ｜ 数据源：Open-Meteo + ECMWF SEAS5/EC46 季节集合</p>
+    <p>整体风险等级 <b style=&quot;color:${lvColor(c.overall)}&quot;>【${c.overall}】</b>。最高风险窗口：${c.windows.reduce((a,b)=>lvRank(b.level)>lvRank(a.level)?b:a).name}。</p>`;
+  let md=`# ${c.county}气象灾害风险预警报告\n\n- 基准：${c.period}｜精度：区县级｜出具：阳光产险农险部 AI 预警作战台\n- 整体风险等级：**【${c.overall}】**\n\n`;
+  html+='<table><tr><th>窗口</th><th>时段</th><th>主要灾害</th><th>等级</th></tr>';
+  c.windows.forEach(w=>{ html+=`<tr><td>${w.name}</td><td>${w.period}</td><td>${w.hazard}</td><td><span class=&quot;tag ${LVCLASS[w.level]}&quot;>${w.level}</span></td></tr>`;
+    md+=`| ${w.name} | ${w.period} | ${w.hazard} | ${w.level} |\n`; });
+  html+='</table>'; md='## 四窗口风险速览\n\n| 窗口 | 时段 | 主要灾害 | 等级 |\n|---|---|---|---|\n'+md;
+  html+='<h3>灾中管护指引</h3>';
+  md+='\n## 灾中管护指引（作物专属）\n\n';
+  c.windows.forEach(w=>{ const tips=guideFor(w.hazard);
+    html+=`<p><b>${w.name}（${w.level}·${w.hazard}）</b> 对 ${c.crops.join('、')}：${tips.join('；')}。</p>`;
+    md+=`- **${w.name}（${w.level}·${w.hazard}）**：${tips.join('；')}\n`; });
+  const top=c.windows.reduce((a,b)=>lvRank(b.level)>lvRank(a.level)?b:a);
+  const adjNote=top.level==='极高'||top.level==='高'?'高/极高风险：灾后立即启动遥感AI定损，前置理赔预赔资源。':'风险中等：常规灾后查勘。';
+  html+=`<h3>理赔与定损建议</h3><p>${adjNote}</p>`;
+  md+=`\n## 理赔与定损建议\n\n${adjNote}\n`;
+  return {html,md};
+}
+function copyReport(){ if(window.__rep) { navigator.clipboard.writeText(window.__rep); alert('报告已复制'); } }
+function dlReport(){ if(!window.__rep) return; const blob=new Blob([window.__rep],{type:'text/markdown'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='预警报告_'+CUR.county+'.md'; a.click(); }
+
+initReports();
+</script>
+</body>
+</html>
+" style="width:100%;flex:1;border:0;"></iframe>
   </div>
 </div>
 <script>
